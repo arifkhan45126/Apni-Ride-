@@ -6,7 +6,7 @@
 <title>Apni Ride</title>
 
 <link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
 *{box-sizing:border-box}
@@ -82,7 +82,7 @@ button.blue{background:#2563eb}
   color:#666;
 }
 
-#map{
+#map,#driverMap{
   height:320px;
   border-radius:15px;
   margin-top:12px;
@@ -114,7 +114,6 @@ button.blue{background:#2563eb}
 
 <!-- ROLE -->
 <div class="card" id="roleBox">
-
 <h2>Select Mode</h2>
 
 <button class="blue" onclick="showPassenger()">
@@ -124,11 +123,11 @@ button.blue{background:#2563eb}
 <button onclick="showDriver()">
 🚕 Driver
 </button>
-
 </div>
 
 
-<!-- PASSENGER -->
+<!-- ================= PASSENGER ================= -->
+
 <div id="passenger" class="hidden">
 
 <div class="card">
@@ -170,9 +169,7 @@ onchange="calculateFare()">
 
 <button class="green"
 onclick="bookRide()">
-
 🚕 Book Ride
-
 </button>
 
 <div id="bookingStatus"></div>
@@ -182,7 +179,8 @@ onclick="bookRide()">
 </div>
 
 
-<!-- DRIVER -->
+<!-- ================= DRIVER ================= -->
+
 <div id="driver" class="hidden">
 
 <div class="card">
@@ -194,24 +192,20 @@ placeholder="Driver Name">
 
 <button class="green"
 onclick="goOnline()">
-
 🟢 Go Online
-
 </button>
 
 <button class="red"
 onclick="goOffline()">
-
 🔴 Go Offline
-
 </button>
 
 <div id="driverStatus"
 class="status">
-
 Driver Offline
-
 </div>
+
+<div id="driverMap"></div>
 
 </div>
 
@@ -292,18 +286,23 @@ MAP VARIABLES
 ========================= */
 
 let map=null;
-
 let routeLayer=null;
 
 let pickupCoords=null;
-
 let dropCoords=null;
 
 let distanceKm=0;
 
+let driverMap=null;
+let driverMarker=null;
+
+let passengerDriverMarker=null;
+
+let driverWatchId=null;
+
 
 /* =========================
-PASSENGER
+PASSENGER MODE
 ========================= */
 
 window.showPassenger=function(){
@@ -316,11 +315,13 @@ document.getElementById("passenger")
 
 initMap();
 
+listenDriverLocation();
+
 };
 
 
 /* =========================
-DRIVER
+DRIVER MODE
 ========================= */
 
 window.showDriver=function(){
@@ -331,23 +332,23 @@ document.getElementById("roleBox")
 document.getElementById("driver")
 .classList.remove("hidden");
 
+initDriverMap();
+
 listenForRides();
 
 };
 
 
 /* =========================
-MAP
+PASSENGER MAP
 ========================= */
 
 function initMap(){
 
 if(map) return;
 
-map=L.map("map").setView(
-[20.4140,72.8328],
-13
-);
+map=L.map("map")
+.setView([20.4140,72.8328],13);
 
 L.tileLayer(
 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -356,6 +357,28 @@ maxZoom:19,
 attribution:"© OpenStreetMap"
 }
 ).addTo(map);
+
+}
+
+
+/* =========================
+DRIVER MAP
+========================= */
+
+function initDriverMap(){
+
+if(driverMap) return;
+
+driverMap=L.map("driverMap")
+.setView([20.4140,72.8328],13);
+
+L.tileLayer(
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+{
+maxZoom:19,
+attribution:"© OpenStreetMap"
+}
+).addTo(driverMap);
 
 }
 
@@ -391,7 +414,7 @@ parseFloat(data[0].lon)
 
 
 /* =========================
-FIND ROUTE
+ROUTE
 ========================= */
 
 window.findRoute=async function(){
@@ -490,7 +513,6 @@ L.marker(dropCoords)
 
 
 info.innerHTML=
-
 '<div class="status">'+
 '📏 Distance: <b>'+
 distanceKm.toFixed(2)+
@@ -530,35 +552,27 @@ return;
 const vehicle=
 document.getElementById("vehicle").value;
 
-
 let base=0;
-
 let perKm=0;
 
 
 if(vehicle==="Bike"){
-
 base=30;
 perKm=10;
-
 }
 
 if(vehicle==="Auto"){
-
 base=40;
 perKm=14;
-
 }
 
 if(vehicle==="Car"){
-
 base=60;
 perKm=18;
-
 }
 
 
-let fare=
+const fare=
 Math.round(
 base+(distanceKm*perKm)
 );
@@ -608,12 +622,7 @@ document.getElementById("vehicle")
 .value;
 
 
-if(
-!name ||
-!phone ||
-!pickup ||
-!drop
-){
+if(!name || !phone || !pickup || !drop){
 
 alert("Please sab details bharo.");
 
@@ -621,12 +630,9 @@ return;
 
 }
 
-
 if(!distanceKm){
 
-alert(
-"Pehle Find Route dabao."
-);
+alert("Pehle Find Route dabao.");
 
 return;
 
@@ -634,29 +640,22 @@ return;
 
 
 let base=0;
-
 let perKm=0;
 
 
 if(vehicle==="Bike"){
-
 base=30;
 perKm=10;
-
 }
 
 if(vehicle==="Auto"){
-
 base=40;
 perKm=14;
-
 }
 
 if(vehicle==="Car"){
-
 base=60;
 perKm=18;
-
 }
 
 
@@ -787,6 +786,10 @@ document.getElementById(
 
 '🚕 Aapki ride accept ho gayi hai.'+
 
+'<br><br>'+
+
+'📍 Driver ki live location map par dekhi ja sakti hai.'+
+
 '</div>';
 
 }
@@ -849,10 +852,10 @@ document.getElementById(
 
 
 /* =========================
-DRIVER ONLINE
+DRIVER GO ONLINE
 ========================= */
 
-window.goOnline=function(){
+window.goOnline=async function(){
 
 const name=
 document.getElementById(
@@ -871,38 +874,280 @@ return;
 }
 
 
+if(!navigator.geolocation){
+
+alert(
+"Is phone me location support nahi hai."
+);
+
+return;
+
+}
+
+
 document.getElementById(
 "driverStatus"
 ).innerHTML=
+"📍 Location permission allow karo...";
 
-"🟢 Driver Online — Ride requests dekh raha hai.";
+
+navigator.geolocation.getCurrentPosition(
+
+async function(position){
+
+const lat=
+position.coords.latitude;
+
+const lng=
+position.coords.longitude;
+
+
+const driverRef=
+ref(db,"drivers/demoDriver");
+
+
+await set(
+driverRef,
+{
+name:name,
+lat:lat,
+lng:lng,
+online:true,
+updatedAt:Date.now()
+}
+);
+
+
+document.getElementById(
+"driverStatus"
+).innerHTML=
+"🟢 Driver Online<br>📍 Live Location ON";
+
+
+showDriverOnMap(lat,lng);
+
+startDriverLocation();
+
+},
+
+function(){
+
+alert(
+"Location permission nahi mili. Phone ki Location ON karke dobara try karo."
+);
+
+},
+
+{
+enableHighAccuracy:true,
+timeout:10000,
+maximumAge:0
+}
+
+);
 
 };
+
+
+/* =========================
+DRIVER LIVE LOCATION
+========================= */
+
+function startDriverLocation(){
+
+if(driverWatchId!==null)
+return;
+
+
+driverWatchId=
+navigator.geolocation.watchPosition(
+
+async function(position){
+
+const lat=
+position.coords.latitude;
+
+const lng=
+position.coords.longitude;
+
+
+await update(
+ref(db,"drivers/demoDriver"),
+{
+lat:lat,
+lng:lng,
+online:true,
+updatedAt:Date.now()
+}
+);
+
+
+showDriverOnMap(lat,lng);
+
+},
+
+function(){
+
+document.getElementById(
+"driverStatus"
+).innerHTML=
+"⚠️ Driver location update nahi ho rahi.";
+
+},
+
+{
+enableHighAccuracy:true,
+maximumAge:5000,
+timeout:10000
+}
+
+);
+
+}
+
+
+/* =========================
+SHOW DRIVER MAP
+========================= */
+
+function showDriverOnMap(lat,lng){
+
+if(!driverMap)
+initDriverMap();
+
+
+if(driverMarker){
+
+driverMarker.setLatLng(
+[lat,lng]
+);
+
+}else{
+
+driverMarker=
+L.marker([lat,lng])
+.addTo(driverMap)
+.bindPopup("🚕 Aapki Location");
+
+}
+
+
+driverMap.setView(
+[lat,lng],
+15
+);
+
+}
 
 
 /* =========================
 DRIVER OFFLINE
 ========================= */
 
-window.goOffline=function(){
+window.goOffline=async function(){
+
+if(driverWatchId!==null){
+
+navigator.geolocation.clearWatch(
+driverWatchId
+);
+
+driverWatchId=null;
+
+}
+
+
+await update(
+ref(db,"drivers/demoDriver"),
+{
+online:false,
+updatedAt:Date.now()
+}
+);
+
 
 document.getElementById(
 "driverStatus"
 ).innerHTML=
-
 "🔴 Driver Offline";
 
 };
 
 
 /* =========================
-RIDE REQUESTS
+PASSENGER LIVE DRIVER
+========================= */
+
+function listenDriverLocation(){
+
+const driverRef=
+ref(db,"drivers/demoDriver");
+
+
+onValue(
+driverRef,
+function(snapshot){
+
+const driver=snapshot.val();
+
+if(!driver)
+return;
+
+if(!driver.online)
+return;
+
+if(!driver.lat || !driver.lng)
+return;
+
+
+showPassengerDriver(
+driver.lat,
+driver.lng
+);
+
+}
+);
+
+}
+
+
+/* =========================
+PASSENGER DRIVER MARKER
+========================= */
+
+function showPassengerDriver(lat,lng){
+
+if(!map)
+return;
+
+
+if(passengerDriverMarker){
+
+passengerDriverMarker.setLatLng(
+[lat,lng]
+);
+
+}else{
+
+passengerDriverMarker=
+L.marker([lat,lng])
+.addTo(map)
+.bindPopup("🚕 Driver");
+
+}
+
+}
+
+
+/* =========================
+DRIVER RIDE REQUESTS
 ========================= */
 
 function listenForRides(){
 
 const ridesRef=
 ref(db,"rides");
+
 
 onValue(
 ridesRef,
@@ -935,9 +1180,8 @@ Object.values(data)
 .reverse()
 .forEach(ride=>{
 
-if(
-ride.status!=="requested"
-)return;
+if(ride.status!=="requested")
+return;
 
 
 found=true;
@@ -1028,7 +1272,7 @@ box.innerHTML=
 
 
 /* =========================
-ACCEPT
+ACCEPT RIDE
 ========================= */
 
 window.acceptRide=
@@ -1053,15 +1297,10 @@ return;
 
 await update(
 ref(db,"rides/"+rideId),
-
 {
-
 status:"accepted",
-
 driverName:driverName
-
 }
-
 );
 
 
@@ -1073,7 +1312,7 @@ alert(
 
 
 /* =========================
-REJECT
+REJECT RIDE
 ========================= */
 
 window.rejectRide=
@@ -1081,13 +1320,9 @@ async function(rideId){
 
 await update(
 ref(db,"rides/"+rideId),
-
 {
-
 status:"rejected"
-
 }
-
 );
 
 };
