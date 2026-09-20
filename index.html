@@ -9,257 +9,584 @@
 *{box-sizing:border-box}
 body{
   margin:0;
-    font-family:Arial,sans-serif;
-      background:#f4f6f8;
-        color:#222;
-        }
-        header{
-          background:#111827;
-            color:white;
-              padding:18px;
-                text-align:center;
-                }
-                .container{
-                  max-width:600px;
-                    margin:auto;
-                      padding:18px;
-                      }
-                      .card{
-                        background:white;
-                          padding:18px;
-                            border-radius:18px;
-                              margin-bottom:15px;
-                                box-shadow:0 3px 12px #0001;
-                                }
-                                h2{margin-top:0}
-                                input,select,button{
-                                  width:100%;
-                                    padding:13px;
-                                      margin:7px 0;
-                                        border-radius:10px;
-                                          border:1px solid #ddd;
-                                            font-size:16px;
-                                            }
-                                            button{
-                                              background:#111827;
-                                                color:white;
-                                                  border:0;
-                                                    font-weight:bold;
-                                                    }
-                                                    button.green{background:#16a34a}
-                                                    button.red{background:#dc2626}
-                                                    button.blue{background:#2563eb}
-                                                    .status{
-                                                      padding:12px;
-                                                        border-radius:10px;
-                                                          background:#eef2ff;
-                                                            margin:10px 0;
-                                                            }
-                                                            .ride{
-                                                              border:1px solid #ddd;
-                                                                padding:14px;
-                                                                  border-radius:12px;
-                                                                    margin-top:10px;
-                                                                    }
-                                                                    .hidden{display:none}
-                                                                    .small{font-size:13px;color:#666}
-                                                                    </style>
-                                                                    </head>
-
-                                                                    <body>
-
-                                                                    <header>
-                                                                      <h1>🚕 Apni Ride</h1>
-                                                                        <div>Passenger + Driver</div>
-                                                                        </header>
-
-                                                                        <div class="container">
-
-                                                                        <!-- ROLE SELECT -->
-                                                                        <div class="card" id="roleBox">
-                                                                          <h2>Select Mode</h2>
-                                                                            <button class="blue" onclick="showPassenger()">👤 Passenger</button>
-                                                                              <button onclick="showDriver()">🚕 Driver</button>
-                                                                              </div>
-
-                                                                              <!-- PASSENGER -->
-                                                                              <div id="passenger" class="hidden">
-
-                                                                              <div class="card">
-                                                                              <h2>👤 Book Your Ride</h2>
-
-                                                                              <input id="pName" placeholder="Passenger Name">
-                                                                              <input id="pPhone" placeholder="Mobile Number">
-
-                                                                              <input id="pickup" placeholder="Pickup Location">
-                                                                              <input id="drop" placeholder="Drop Location">
-
-                                                                              <select id="vehicle">
-                                                                              <option value="Bike">🏍️ Bike</option>
-                                                                              <option value="Auto">🛺 Auto</option>
-                                                                              <option value="Car">🚗 Car</option>
-                                                                              </select>
-
-                                                                              <button class="green" onclick="bookRide()">🚕 Book Ride</button>
-
-                                                                              <div id="bookingStatus"></div>
-                                                                              </div>
-
-                                                                              </div>
-
-                                                                              <!-- DRIVER -->
-                                                                              <div id="driver" class="hidden">
+  font-family:Arial,sans-serif;
+  background:#f4f6f8;
+  color:#222;
+}
+header{
+  background:#111827;
+  color:white;
+  padding:18px;
+  text-align:center;
+}
+.container{
+  max-width:600px;
+  margin:auto;
+  padding:18px;
+}
+.card{
+  background:white;
+  padding:18px;
+  border-radius:18px;
+  margin-bottom:15px;
+  box-shadow:0 3px 12px #0001;
+}
+h2{margin-top:0}
+input,select,button{
+  width:100%;
+  padding:13px;
+  margin:7px 0;
+  border-radius:10px;
+  border:1px solid #ddd;
+  font-size:16px;
+}
+button{
+  background:#111827;
+  color:white;
+  border:0;
+  font-weight:bold;
+}
+button.green{background:#16a34a}
+button.red{background:#dc2626}
+button.blue{background:#2563eb}
+.status{
+  padding:12px;
+  border-radius:10px;
+  background:#eef2ff;
+  margin:10px 0;
+}
+.ride{
+  border:1px solid #ddd;
+  padding:14px;
+  border-radius:12px;
+  margin-top:10px;
+}
+.hidden{display:none}
+.small{font-size:13px;color:#666}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>🚕 Apni Ride</h1>
+  <div>Passenger + Driver</div>
+</header>
+
+<div class="container">
+
+<!-- ROLE SELECT -->
+<div class="card" id="roleBox">
+  <h2>Select Mode</h2>
+  <button class="blue" onclick="showPassenger()">👤 Passenger</button>
+  <button onclick="showDriver()">🚕 Driver</button>
+</div>
+
+<!-- PASSENGER -->
+<div id="passenger" class="hidden">
+
+<div class="card">
+<h2>👤 Book Your Ride</h2>
+
+<input id="pName" placeholder="Passenger Name">
+<input id="pPhone" placeholder="Mobile Number">
+
+<input id="pickup" placeholder="Pickup Location">
+<input id="drop" placeholder="Drop Location">
+
+<select id="vehicle">
+<option value="Bike">🏍️ Bike</option>
+<option value="Auto">🛺 Auto</option>
+<option value="Car">🚗 Car</option>
+</select>
+
+<button class="green" onclick="bookRide()">🚕 Book Ride</button>
+
+<div id="bookingStatus"></div>
+</div>
+
+</div>
+
+<!-- DRIVER -->
+<div id="driver" class="hidden">
 
-                                                                              <div class="card">
-                                                                              <h2>🚕 Driver Dashboard</h2>
+<div class="card">
+<h2>🚕 Driver Dashboard</h2>
 
-                                                                              <input id="driverName" placeholder="Driver Name">
+<input id="driverName" placeholder="Driver Name">
 
-                                                                              <button class="green" onclick="goOnline()">🟢 Go Online</button>
-                                                                              <button class="red" onclick="goOffline()">🔴 Go Offline</button>
+<button class="green" onclick="goOnline()">🟢 Go Online</button>
+<button class="red" onclick="goOffline()">🔴 Go Offline</button>
 
-                                                                              <div id="driverStatus" class="status">
-                                                                              Driver Offline
-                                                                              </div>
-                                                                              </div>
+<div id="driverStatus" class="status">
+Driver Offline
+</div>
+</div>
 
-                                                                              <div class="card">
-                                                                              <h2>📥 Ride Requests</h2>
-                                                                              <div id="rideRequests">
-                                                                              Waiting for ride requests...
-                                                                              </div>
-                                                                              </div>
+<div class="card">
+<h2>📥 Ride Requests</h2>
+<div id="rideRequests">
+Waiting for ride requests...
+</div>
+</div>
 
-                                                                              </div>
+</div>
 
-                                                                              </div>
+</div>
 
-                                                                              <script type="module">
+<script type="module">
 
-                                                                              import { initializeApp }
-                                                                              from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 
-                                                                              import {
-                                                                                getDatabase,
-                                                                                  ref,
-                                                                                    push,
-                                                                                      set,
-                                                                                        onValue,
-                                                                                          update
-                                                                                          }
-                                                                                          from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+import {
+  getDatabase,
+  ref,
+  push,
+  set,
+  onValue,
+  update
+}
+from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 
-                                                                                          /* =========================
-                                                                                             FIREBASE CONFIG
-                                                                                             ========================= */
+/* =========================
+   FIREBASE CONFIG
+========================= */
 
-                                                                                             const firebaseConfig = {
+const firebaseConfig = {
 
-                                                                                               apiKey: "AIzaSyD6u_Xa4YdDwMT8zoFZrO1dn6Qurc6pmcg",
+  apiKey: "AIzaSyD6u_Xa4YdDwMT8zoFZrO1dn6Qurc6pmcg",
 
-                                                                                                 authDomain: "apni-ride-c23f3.firebaseapp.com",
+  authDomain: "apni-ride-c23f3.firebaseapp.com",
 
-                                                                                                   databaseURL:
-                                                                                                     "https://apni-ride-c23f3-default-rtdb.firebaseio.com",
+  databaseURL:
+  "https://apni-ride-c23f3-default-rtdb.firebaseio.com",
 
-                                                                                                       projectId: "apni-ride-c23f3",
+  projectId: "apni-ride-c23f3",
 
-                                                                                                         storageBucket:
-                                                                                                           "apni-ride-c23f3.firebasestorage.app",
+  storageBucket:
+  "apni-ride-c23f3.firebasestorage.app",
 
-                                                                                                             messagingSenderId:
-                                                                                                               "537555369746",
+  messagingSenderId:
+  "537555369746",
 
-                                                                                                                 appId:
-                                                                                                                   "1:537555369746:web:5f5226a0eb5c8d8b83fdcb",
+  appId:
+  "1:537555369746:web:5f5226a0eb5c8d8b83fdcb",
 
-                                                                                                                     measurementId:
-                                                                                                                       "G-22LLYKLYE3"
-                                                                                                                       };
+  measurementId:
+  "G-22LLYKLYE3"
+};
 
 
-                                                                                                                       /* START FIREBASE */
+/* START FIREBASE */
 
-                                                                                                                       const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
-                                                                                                                       const db = getDatabase(app);
+const db = getDatabase(app);
 
 
-                                                                                                                       /* =========================
-                                                                                                                          ROLE
-                                                                                                                          ========================= */
+/* =========================
+   ROLE
+========================= */
 
-                                                                                                                          window.showPassenger = function(){
+window.showPassenger = function(){
 
-                                                                                                                            document.getElementById("roleBox").classList.add("hidden");
+  document.getElementById("roleBox").classList.add("hidden");
 
-                                                                                                                              document.getElementById("passenger")
-                                                                                                                                .classList.remove("hidden");
+  document.getElementById("passenger")
+  .classList.remove("hidden");
 
-                                                                                                                                };
+};
 
 
-                                                                                                                                window.showDriver = function(){
+window.showDriver = function(){
 
-                                                                                                                                  document.getElementById("roleBox").classList.add("hidden");
+  document.getElementById("roleBox").classList.add("hidden");
 
-                                                                                                                                    document.getElementById("driver")
-                                                                                                                                      .classList.remove("hidden");
+  document.getElementById("driver")
+  .classList.remove("hidden");
 
-                                                                                                                                        listenForRides();
+  listenForRides();
 
-                                                                                                                                        };
+};
 
 
-                                                                                                                                        /* =========================
-                                                                                                                                           PASSENGER BOOK RIDE
-                                                                                                                                           ========================= */
+/* =========================
+   PASSENGER BOOK RIDE
+========================= */
 
-                                                                                                                                           window.bookRide = async function(){
+window.bookRide = async function(){
 
-                                                                                                                                             const name =
-                                                                                                                                               document.getElementById("pName").value.trim();
+  const name =
+  document.getElementById("pName").value.trim();
 
-                                                                                                                                                 const phone =
-                                                                                                                                                   document.getElementById("pPhone").value.trim();
+  const phone =
+  document.getElementById("pPhone").value.trim();
 
-                                                                                                                                                     const pickup =
-                                                                                                                                                       document.getElementById("pickup").value.trim();
+  const pickup =
+  document.getElementById("pickup").value.trim();
 
-                                                                                                                                                         const drop =
-                                                                                                                                                           document.getElementById("drop").value.trim();
+  const drop =
+  document.getElementById("drop").value.trim();
 
-                                                                                                                                                             const vehicle =
-                                                                                                                                                               document.getElementById("vehicle").value;
+  const vehicle =
+  document.getElementById("vehicle").value;
 
 
-                                                                                                                                                                 if(!name || !phone || !pickup || !drop){
+  if(!name || !phone || !pickup || !drop){
 
-                                                                                                                                                                     alert("Please sab details bharo.");
+    alert("Please sab details bharo.");
 
-                                                                                                                                                                         return;
-                                                                                                                                                                           }
+    return;
+  }
 
 
-                                                                                                                                                                             const rideRef =
-                                                                                                                                                                               push(ref(db,"rides"));
+  const rideRef =
+  push(ref(db,"rides"));
 
 
-                                                                                                                                                                                 const ride = {
+  const ride = {
 
-                                                                                                                                                                                     rideId: rideRef.key,
+    rideId: rideRef.key,
 
-                                                                                                                                                                                         passengerName:name,
+    passengerName:name,
 
-                                                                                                                                                                                             phone:phone,
+    phone:phone,
 
-                                                                                                                                                                                                 pickup:pickup,
+    pickup:pickup,
 
-                                                                                                                                                                                                     drop:drop,
+    drop:drop,
 
-                                                                                                                                                                                                         vehicle:vehicle,
+    vehicle:vehicle,
 
-                                                                                                                                                                                                             status:"requested",
+    status:"requested",
 
-                                                                                                                                                                                   
+    driverName:"",
+
+    createdAt:Date.now()
+
+  };
+
+
+  try{
+
+    await set(rideRef,ride);
+
+    document.getElementById("bookingStatus")
+    .innerHTML = `
+
+      <div class="status">
+
+      ✅ <b>Ride Request Sent!</b><br><br>
+
+      Booking ID:<br>
+      <b>${rideRef.key}</b><br><br>
+
+      🚕 Driver ko request bhej di gayi hai.
+
+      </div>
+
+    `;
+
+    listenPassengerStatus(rideRef.key);
+
+  }catch(error){
+
+    alert("Booking error: "+error.message);
+
+  }
+
+};
+
+
+/* =========================
+   PASSENGER STATUS
+========================= */
+
+function listenPassengerStatus(rideId){
+
+  const rideRef =
+  ref(db,"rides/"+rideId);
+
+  onValue(rideRef,(snapshot)=>{
+
+    const ride = snapshot.val();
+
+    if(!ride)return;
+
+
+    if(ride.status==="accepted"){
+
+      document.getElementById("bookingStatus")
+      .innerHTML = `
+
+      <div class="status">
+
+      🟢 <b>Driver Accepted!</b><br><br>
+
+      Driver: ${ride.driverName || "Driver"}<br>
+
+      🚕 Aapki ride accept ho gayi hai.
+
+      </div>
+
+      `;
+
+    }
+
+    if(ride.status==="started"){
+
+      document.getElementById("bookingStatus")
+      .innerHTML = `
+
+      <div class="status">
+
+      🚕 <b>Ride Started</b><br><br>
+
+      Driver: ${ride.driverName || "Driver"}
+
+      </div>
+
+      `;
+
+    }
+
+    if(ride.status==="completed"){
+
+      document.getElementById("bookingStatus")
+      .innerHTML = `
+
+      <div class="status">
+
+      ✅ <b>Ride Completed</b>
+
+      </div>
+
+      `;
+
+    }
+
+  });
+
+}
+
+
+/* =========================
+   DRIVER ONLINE
+========================= */
+
+window.goOnline = function(){
+
+  const name =
+  document.getElementById("driverName")
+  .value.trim();
+
+
+  if(!name){
+
+    alert("Pehle driver name bharo.");
+
+    return;
+
+  }
+
+
+  document.getElementById("driverStatus")
+  .innerHTML =
+  "🟢 Driver Online — Ride requests dekh raha hai.";
+
+};
+
+
+/* =========================
+   DRIVER OFFLINE
+========================= */
+
+window.goOffline = function(){
+
+  document.getElementById("driverStatus")
+  .innerHTML =
+  "🔴 Driver Offline";
+
+};
+
+
+/* =========================
+   LISTEN FOR NEW RIDES
+========================= */
+
+function listenForRides(){
+
+  const ridesRef =
+  ref(db,"rides");
+
+  onValue(ridesRef,(snapshot)=>{
+
+    const data = snapshot.val();
+
+    const box =
+    document.getElementById("rideRequests");
+
+    box.innerHTML = "";
+
+
+    if(!data){
+
+      box.innerHTML =
+      "Abhi koi ride request nahi hai.";
+
+      return;
+
+    }
+
+
+    let found = false;
+
+
+    Object.values(data).reverse()
+    .forEach(ride=>{
+
+      if(ride.status !== "requested")
+        return;
+
+
+      found = true;
+
+
+      const div =
+      document.createElement("div");
+
+      div.className="ride";
+
+
+      div.innerHTML = `
+
+      <b>🚕 New Ride Request</b>
+
+      <br><br>
+
+      👤 Passenger:
+      ${ride.passengerName}
+
+      <br>
+
+      📞 Mobile:
+      ${ride.phone}
+
+      <br>
+
+      📍 Pickup:
+      ${ride.pickup}
+
+      <br>
+
+      🏁 Drop:
+      ${ride.drop}
+
+      <br>
+
+      🚗 Vehicle:
+      ${ride.vehicle}
+
+      <br><br>
+
+      <button
+      class="green"
+      onclick="acceptRide('${ride.rideId}')">
+
+      ✅ Accept Ride
+
+      </button>
+
+      <button
+      class="red"
+      onclick="rejectRide('${ride.rideId}')">
+
+      ❌ Reject
+
+      </button>
+
+      `;
+
+
+      box.appendChild(div);
+
+    });
+
+
+    if(!found){
+
+      box.innerHTML =
+      "Abhi koi new ride request nahi hai.";
+
+    }
+
+  });
+
+}
+
+
+/* =========================
+   ACCEPT RIDE
+========================= */
+
+window.acceptRide = async function(rideId){
+
+  const driverName =
+  document.getElementById("driverName")
+  .value.trim();
+
+
+  if(!driverName){
+
+    alert("Driver name bharo.");
+
+    return;
+
+  }
+
+
+  await update(
+    ref(db,"rides/"+rideId),
+
+    {
+
+      status:"accepted",
+
+      driverName:driverName
+
+    }
+
+  );
+
+
+  alert("✅ Ride Accepted!");
+
+};
+
+
+/* =========================
+   REJECT RIDE
+========================= */
+
+window.rejectRide = async function(rideId){
+
+  await update(
+
+    ref(db,"rides/"+rideId),
+
+    {
+
+      status:"rejected"
+
+    }
+
+  );
+
+};
+
+</script>
+
+</body>
+</html>
