@@ -6,10 +6,12 @@
 <title>Apni Ride</title>
 
 <link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
-*{box-sizing:border-box}
+*{
+  box-sizing:border-box;
+}
 
 body{
   margin:0;
@@ -25,80 +27,109 @@ header{
   text-align:center;
 }
 
+header h1{
+  margin:0;
+}
+
 .container{
-  max-width:650px;
+  max-width:900px;
   margin:auto;
-  padding:18px;
+  padding:15px;
 }
 
 .card{
   background:white;
   padding:18px;
-  border-radius:18px;
   margin-bottom:15px;
-  box-shadow:0 3px 12px #0001;
+  border-radius:14px;
+  box-shadow:0 3px 12px rgba(0,0,0,.1);
 }
 
-h2{margin-top:0}
-
-input,select,button{
+input,select{
   width:100%;
   padding:13px;
   margin:7px 0;
-  border-radius:10px;
-  border:1px solid #ddd;
-  font-size:16px;
+  border:1px solid #ccc;
+  border-radius:8px;
+  font-size:15px;
 }
 
 button{
-  background:#111827;
-  color:white;
+  width:100%;
+  padding:13px;
   border:0;
-  font-weight:bold;
+  border-radius:8px;
+  margin-top:8px;
+  background:#2563eb;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
 }
 
-button.green{background:#16a34a}
-button.red{background:#dc2626}
-button.blue{background:#2563eb}
+button:hover{
+  opacity:.9;
+}
+
+.green{
+  background:#16a34a;
+}
+
+.red{
+  background:#dc2626;
+}
+
+.orange{
+  background:#ea580c;
+}
+
+.gray{
+  background:#6b7280;
+}
+
+.hidden{
+  display:none;
+}
+
+#map,#driverMap{
+  height:350px;
+  border-radius:12px;
+  margin-top:12px;
+}
 
 .status{
   padding:12px;
-  border-radius:10px;
+  border-radius:8px;
   background:#eef2ff;
-  margin:10px 0;
+  margin-top:10px;
 }
 
 .ride{
   border:1px solid #ddd;
-  padding:14px;
-  border-radius:12px;
+  border-radius:10px;
+  padding:12px;
   margin-top:10px;
 }
 
-.hidden{display:none}
+.stars{
+  display:flex;
+  gap:7px;
+  justify-content:center;
+  margin:15px 0;
+}
+
+.star{
+  font-size:35px;
+  cursor:pointer;
+}
+
+.rating-text{
+  text-align:center;
+  font-weight:bold;
+}
 
 .small{
   font-size:13px;
   color:#666;
-}
-
-#map,#driverMap{
-  height:320px;
-  border-radius:15px;
-  margin-top:12px;
-}
-
-.fare{
-  background:#ecfdf5;
-  padding:15px;
-  border-radius:12px;
-  margin-top:10px;
-  font-size:17px;
-}
-
-.loading{
-  padding:10px;
-  text-align:center;
 }
 </style>
 </head>
@@ -106,40 +137,39 @@ button.blue{background:#2563eb}
 <body>
 
 <header>
-<h1>🚕 Apni Ride</h1>
-<div>Passenger + Driver</div>
+  <h1>🚕 Apni Ride</h1>
+  <p>Simple Ride Booking App</p>
 </header>
 
 <div class="container">
 
-<!-- ROLE -->
-<div class="card" id="roleBox">
-<h2>Select Mode</h2>
+<!-- ROLE SELECTION -->
+<div class="card" id="roleCard">
+  <h2>Choose Mode</h2>
 
-<button class="blue" onclick="showPassenger()">
-👤 Passenger
-</button>
+  <button onclick="showPassenger()">
+    👤 Passenger
+  </button>
 
-<button onclick="showDriver()">
-🚕 Driver
-</button>
+  <button class="orange" onclick="showDriver()">
+    👨‍✈️ Driver
+  </button>
 </div>
 
 
 <!-- ================= PASSENGER ================= -->
 
-<div id="passenger" class="hidden">
+<div id="passengerSection" class="hidden">
 
 <div class="card">
 
-<h2>👤 Book Your Ride</h2>
+<h2>🚕 Book Your Ride</h2>
 
-<input id="pName"
+<input id="passengerName"
 placeholder="Passenger Name">
 
-<input id="pPhone"
-placeholder="Mobile Number"
-type="tel">
+<input id="passengerPhone"
+placeholder="Mobile Number">
 
 <input id="pickup"
 placeholder="Pickup Location">
@@ -147,32 +177,63 @@ placeholder="Pickup Location">
 <input id="drop"
 placeholder="Drop Location">
 
-<button class="blue"
-onclick="findRoute()">
-🗺️ Find Route
-</button>
-
-<div id="map"></div>
-
-<div id="routeInfo"></div>
-
-<select id="vehicle"
-onchange="calculateFare()">
-
-<option value="Bike">🏍️ Bike</option>
-<option value="Auto">🛺 Auto</option>
-<option value="Car">🚗 Car</option>
-
+<select id="vehicle">
+  <option value="bike">🏍️ Bike</option>
+  <option value="auto">🛺 Auto</option>
+  <option value="car">🚗 Car</option>
 </select>
 
-<div id="fareBox"></div>
-
-<button class="green"
-onclick="bookRide()">
-🚕 Book Ride
+<button onclick="calculateRoute()">
+  🗺️ Calculate Route
 </button>
 
-<div id="bookingStatus"></div>
+<div id="routeInfo" class="status">
+  Distance: -
+</div>
+
+<button class="green" onclick="bookRide()">
+  🚕 Book Ride
+</button>
+
+<button class="gray" onclick="backHome()">
+  ⬅️ Back
+</button>
+
+</div>
+
+<div class="card">
+  <div id="map"></div>
+</div>
+
+<div class="card">
+
+<h2>📋 My Ride</h2>
+
+<div id="passengerStatus">
+  No active ride
+</div>
+
+<div id="ratingBox" class="hidden">
+
+<h3>⭐ Rate Your Ride</h3>
+
+<div class="stars">
+  <span class="star" onclick="selectRating(1)">☆</span>
+  <span class="star" onclick="selectRating(2)">☆</span>
+  <span class="star" onclick="selectRating(3)">☆</span>
+  <span class="star" onclick="selectRating(4)">☆</span>
+  <span class="star" onclick="selectRating(5)">☆</span>
+</div>
+
+<div id="ratingText" class="rating-text">
+  Select rating
+</div>
+
+<button class="green" onclick="submitRating()">
+  ⭐ Submit Rating
+</button>
+
+</div>
 
 </div>
 
@@ -181,41 +242,44 @@ onclick="bookRide()">
 
 <!-- ================= DRIVER ================= -->
 
-<div id="driver" class="hidden">
+<div id="driverSection" class="hidden">
 
 <div class="card">
 
-<h2>🚕 Driver Dashboard</h2>
+<h2>👨‍✈️ Driver Dashboard</h2>
 
-<input id="driverName"
-placeholder="Driver Name">
+<p id="driverStatus">
+  Driver Offline
+</p>
 
-<button class="green"
-onclick="goOnline()">
-🟢 Go Online
+<button class="green" onclick="goOnline()">
+  🟢 Go Online
 </button>
 
-<button class="red"
-onclick="goOffline()">
-🔴 Go Offline
+<button class="red" onclick="goOffline()">
+  🔴 Go Offline
 </button>
 
-<div id="driverStatus"
-class="status">
-Driver Offline
+<button class="gray" onclick="backHome()">
+  ⬅️ Back
+</button>
+
 </div>
+
+<div class="card">
+
+<h3>📍 Driver Location</h3>
 
 <div id="driverMap"></div>
 
 </div>
 
-
 <div class="card">
 
-<h2>📥 Ride Requests</h2>
+<h2>🚕 Ride Requests</h2>
 
 <div id="rideRequests">
-Waiting for ride requests...
+  No ride requests
 </div>
 
 </div>
@@ -223,9 +287,6 @@ Waiting for ride requests...
 </div>
 
 </div>
-
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 
 <script type="module">
@@ -234,1098 +295,950 @@ import { initializeApp }
 from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 
 import {
-getDatabase,
-ref,
-push,
-set,
-onValue,
-update
+  getDatabase,
+  ref,
+  push,
+  set,
+  update,
+  onValue
 }
 from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
+import L from "https://unpkg.com/leaflet@1.9.4/dist/leaflet-src.esm.js";
 
-/* =========================
-FIREBASE
-========================= */
+
+/* ================= FIREBASE ================= */
 
 const firebaseConfig = {
-
-apiKey:
-"AIzaSyD6u_Xa4YdDwMT8zoFZrO1dn6Qurc6pmcg",
-
-authDomain:
-"apni-ride-c23f3.firebaseapp.com",
-
-databaseURL:
-"https://apni-ride-c23f3-default-rtdb.firebaseio.com",
-
-projectId:
-"apni-ride-c23f3",
-
-storageBucket:
-"apni-ride-c23f3.firebasestorage.app",
-
-messagingSenderId:
-"537555369746",
-
-appId:
-"1:537555369746:web:5f5226a0eb5c8d8b83fdcb",
-
-measurementId:
-"G-22LLYKLYE3"
-
+  apiKey: "AIzaSyD6u_Xa4YdDwMT8zoFZrO1dn6Qurc6pmcg",
+  authDomain: "apni-ride-c23f3.firebaseapp.com",
+  databaseURL: "https://apni-ride-c23f3-default-rtdb.firebaseio.com",
+  projectId: "apni-ride-c23f3",
+  storageBucket: "apni-ride-c23f3.firebasestorage.app",
+  messagingSenderId: "537555369746",
+  appId: "1:537555369746:web:5f5226a0eb5c8d8b83fdcb",
+  measurementId: "G-22LLYKLYE3"
 };
 
-const app=initializeApp(firebaseConfig);
-
-const db=getDatabase(app);
-
-
-/* =========================
-MAP VARIABLES
-========================= */
-
-let map=null;
-let routeLayer=null;
-
-let pickupCoords=null;
-let dropCoords=null;
-
-let distanceKm=0;
-
-let driverMap=null;
-let driverMarker=null;
-
-let passengerDriverMarker=null;
-
-let driverWatchId=null;
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
 
-/* =========================
-PASSENGER MODE
-========================= */
+/* ================= VARIABLES ================= */
 
-window.showPassenger=function(){
+let map;
+let driverMap;
 
-document.getElementById("roleBox")
-.classList.add("hidden");
+let pickupCoords = null;
+let dropCoords = null;
 
-document.getElementById("passenger")
-.classList.remove("hidden");
+let routeLine = null;
+let pickupMarker = null;
+let dropMarker = null;
+let driverMarker = null;
 
-initMap();
+let currentRideId = null;
+let currentRideData = null;
 
-listenDriverLocation();
+let currentRating = 0;
 
-};
+let watchId = null;
 
 
-/* =========================
-DRIVER MODE
-========================= */
+/* ================= MAP ================= */
 
-window.showDriver=function(){
+function createPassengerMap(){
 
-document.getElementById("roleBox")
-.classList.add("hidden");
+  if(map) return;
 
-document.getElementById("driver")
-.classList.remove("hidden");
+  map = L.map("map").setView([20.4283,72.8397],13);
 
-initDriverMap();
+  L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      attribution:"© OpenStreetMap"
+    }
+  ).addTo(map);
+}
 
-listenForRides();
+
+function createDriverMap(){
+
+  if(driverMap) return;
+
+  driverMap = L.map("driverMap").setView([20.4283,72.8397],13);
+
+  L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      attribution:"© OpenStreetMap"
+    }
+  ).addTo(driverMap);
+}
+
+
+/* ================= UI ================= */
+
+window.showPassenger = function(){
+
+  document.getElementById("roleCard").classList.add("hidden");
+
+  document.getElementById("passengerSection")
+  .classList.remove("hidden");
+
+  createPassengerMap();
+
+  setTimeout(()=>{
+    map.invalidateSize();
+  },300);
+
+  listenForDriver();
 
 };
 
 
-/* =========================
-PASSENGER MAP
-========================= */
+window.showDriver = function(){
 
-function initMap(){
+  document.getElementById("roleCard").classList.add("hidden");
 
-if(map) return;
+  document.getElementById("driverSection")
+  .classList.remove("hidden");
 
-map=L.map("map")
-.setView([20.4140,72.8328],13);
+  createDriverMap();
 
-L.tileLayer(
-"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-{
-maxZoom:19,
-attribution:"© OpenStreetMap"
-}
-).addTo(map);
+  setTimeout(()=>{
+    driverMap.invalidateSize();
+  },300);
 
-}
-
-
-/* =========================
-DRIVER MAP
-========================= */
-
-function initDriverMap(){
-
-if(driverMap) return;
-
-driverMap=L.map("driverMap")
-.setView([20.4140,72.8328],13);
-
-L.tileLayer(
-"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-{
-maxZoom:19,
-attribution:"© OpenStreetMap"
-}
-).addTo(driverMap);
-
-}
-
-
-/* =========================
-GEOCODING
-========================= */
-
-async function getCoordinates(place){
-
-const url=
-"https://nominatim.openstreetmap.org/search?format=json&limit=1&q="
-+encodeURIComponent(place);
-
-const response=await fetch(url);
-
-const data=await response.json();
-
-if(!data.length){
-
-throw new Error(
-"Location nahi mili: "+place
-);
-
-}
-
-return[
-parseFloat(data[0].lat),
-parseFloat(data[0].lon)
-];
-
-}
-
-
-/* =========================
-ROUTE
-========================= */
-
-window.findRoute=async function(){
-
-const pickup=
-document.getElementById("pickup")
-.value.trim();
-
-const drop=
-document.getElementById("drop")
-.value.trim();
-
-if(!pickup || !drop){
-
-alert("Pickup aur Drop dono bharo.");
-
-return;
-
-}
-
-const info=
-document.getElementById("routeInfo");
-
-info.innerHTML=
-'<div class="loading">🔎 Route find ho raha hai...</div>';
-
-try{
-
-pickupCoords=
-await getCoordinates(pickup);
-
-dropCoords=
-await getCoordinates(drop);
-
-
-const routeUrl=
-"https://router.project-osrm.org/route/v1/driving/"
-+
-pickupCoords[1]+","+pickupCoords[0]
-+
-";"
-+
-dropCoords[1]+","+dropCoords[0]
-+
-"?overview=full&geometries=geojson";
-
-
-const response=
-await fetch(routeUrl);
-
-const data=
-await response.json();
-
-
-if(data.code!=="Ok"){
-
-throw new Error("Route nahi mila.");
-
-}
-
-
-const route=data.routes[0];
-
-distanceKm=
-route.distance/1000;
-
-
-if(routeLayer){
-
-map.removeLayer(routeLayer);
-
-}
-
-
-routeLayer=
-L.geoJSON(
-route.geometry
-).addTo(map);
-
-
-map.fitBounds(
-routeLayer.getBounds(),
-{padding:[20,20]}
-);
-
-
-L.marker(pickupCoords)
-.addTo(map)
-.bindPopup("📍 Pickup")
-.openPopup();
-
-
-L.marker(dropCoords)
-.addTo(map)
-.bindPopup("🏁 Drop");
-
-
-info.innerHTML=
-'<div class="status">'+
-'📏 Distance: <b>'+
-distanceKm.toFixed(2)+
-' km</b>'+
-'</div>';
-
-
-calculateFare();
-
-}catch(error){
-
-info.innerHTML=
-'<div class="status">'+
-'❌ '+error.message+
-'</div>';
-
-}
+  listenForRides();
 
 };
 
 
-/* =========================
-FARE
-========================= */
+window.backHome = function(){
 
-window.calculateFare=function(){
+  document.getElementById("roleCard")
+  .classList.remove("hidden");
 
-if(!distanceKm){
+  document.getElementById("passengerSection")
+  .classList.add("hidden");
 
-document.getElementById("fareBox")
-.innerHTML="";
-
-return;
-
-}
-
-const vehicle=
-document.getElementById("vehicle").value;
-
-let base=0;
-let perKm=0;
-
-
-if(vehicle==="Bike"){
-base=30;
-perKm=10;
-}
-
-if(vehicle==="Auto"){
-base=40;
-perKm=14;
-}
-
-if(vehicle==="Car"){
-base=60;
-perKm=18;
-}
-
-
-const fare=
-Math.round(
-base+(distanceKm*perKm)
-);
-
-
-document.getElementById("fareBox")
-.innerHTML=
-
-'<div class="fare">'+
-'💰 Estimated Fare: <b>₹'+
-fare+
-'</b><br>'+
-'<span class="small">'+
-vehicle+
-' • '+
-distanceKm.toFixed(2)+
-' km</span>'+
-'</div>';
+  document.getElementById("driverSection")
+  .classList.add("hidden");
 
 };
 
 
-/* =========================
-BOOK RIDE
-========================= */
+/* ================= GEOCODING ================= */
 
-window.bookRide=async function(){
+async function geocode(address){
 
-const name=
-document.getElementById("pName")
-.value.trim();
+  const url =
+  "https://nominatim.openstreetmap.org/search?format=json&limit=1&q="
+  +encodeURIComponent(address);
 
-const phone=
-document.getElementById("pPhone")
-.value.trim();
+  const response = await fetch(url);
 
-const pickup=
-document.getElementById("pickup")
-.value.trim();
+  const data = await response.json();
 
-const drop=
-document.getElementById("drop")
-.value.trim();
+  if(!data.length){
+    throw new Error("Location not found");
+  }
 
-const vehicle=
-document.getElementById("vehicle")
-.value;
-
-
-if(!name || !phone || !pickup || !drop){
-
-alert("Please sab details bharo.");
-
-return;
-
-}
-
-if(!distanceKm){
-
-alert("Pehle Find Route dabao.");
-
-return;
-
+  return [
+    parseFloat(data[0].lat),
+    parseFloat(data[0].lon)
+  ];
 }
 
 
-let base=0;
-let perKm=0;
+/* ================= ROUTE ================= */
 
+window.calculateRoute = async function(){
 
-if(vehicle==="Bike"){
-base=30;
-perKm=10;
-}
+  const pickup =
+  document.getElementById("pickup").value.trim();
 
-if(vehicle==="Auto"){
-base=40;
-perKm=14;
-}
+  const drop =
+  document.getElementById("drop").value.trim();
 
-if(vehicle==="Car"){
-base=60;
-perKm=18;
-}
+  if(!pickup || !drop){
 
+    alert("Pickup aur Drop dono bharna hai.");
 
-const fare=
-Math.round(
-base+(distanceKm*perKm)
-);
+    return;
+  }
 
+  try{
 
-const rideRef=
-push(ref(db,"rides"));
+    document.getElementById("routeInfo").innerText =
+      "Calculating route...";
 
+    pickupCoords = await geocode(pickup);
 
-const ride={
+    dropCoords = await geocode(drop);
 
-rideId:rideRef.key,
+    const url =
+      `https://router.project-osrm.org/route/v1/driving/`
+      +`${pickupCoords[1]},${pickupCoords[0]};`
+      +`${dropCoords[1]},${dropCoords[0]}`
+      +`?overview=full&geometries=geojson`;
 
-passengerName:name,
+    const response = await fetch(url);
 
-phone:phone,
+    const data = await response.json();
 
-pickup:pickup,
+    if(!data.routes || !data.routes.length){
 
-drop:drop,
+      alert("Route nahi mila.");
 
-vehicle:vehicle,
+      return;
+    }
 
-distanceKm:
-Number(distanceKm.toFixed(2)),
+    const route = data.routes[0];
 
-fare:fare,
+    const distanceKm =
+      route.distance / 1000;
 
-status:"requested",
+    const vehicle =
+      document.getElementById("vehicle").value;
 
-driverName:"",
+    const fare =
+      calculateFare(vehicle,distanceKm);
 
-createdAt:Date.now()
+    document.getElementById("routeInfo").innerHTML =
+      `Distance: <b>${distanceKm.toFixed(2)} km</b><br>
+       Estimated Fare: <b>₹${fare}</b>`;
+
+    if(routeLine){
+      map.removeLayer(routeLine);
+    }
+
+    if(pickupMarker){
+      map.removeLayer(pickupMarker);
+    }
+
+    if(dropMarker){
+      map.removeLayer(dropMarker);
+    }
+
+    routeLine =
+      L.geoJSON(route.geometry)
+      .addTo(map);
+
+    pickupMarker =
+      L.marker(pickupCoords)
+      .addTo(map)
+      .bindPopup("Pickup")
+      .openPopup();
+
+    dropMarker =
+      L.marker(dropCoords)
+      .addTo(map)
+      .bindPopup("Drop");
+
+    map.fitBounds(routeLine.getBounds());
+
+    window.lastDistanceKm = distanceKm;
+    window.lastFare = fare;
+
+  }catch(error){
+
+    console.error(error);
+
+    alert(
+      "Location/route calculate nahi hua. Location ka naam dobara check karo."
+    );
+
+  }
 
 };
 
 
-try{
+/* ================= FARE ================= */
 
-await set(
-rideRef,
-ride
-);
+function calculateFare(vehicle,distance){
 
+  let base = 0;
+  let perKm = 0;
 
-document.getElementById(
-"bookingStatus"
-).innerHTML=
+  if(vehicle === "bike"){
 
-'<div class="status">'+
+    base = 30;
+    perKm = 10;
 
-'✅ <b>Ride Request Sent!</b>'+
-'<br><br>'+
+  }else if(vehicle === "auto"){
 
-'Booking ID:<br>'+
-'<b>'+rideRef.key+'</b>'+
+    base = 40;
+    perKm = 14;
 
-'<br><br>'+
+  }else{
 
-'📏 Distance: '+
-distanceKm.toFixed(2)+
-' km<br>'+
+    base = 60;
+    perKm = 18;
 
-'💰 Fare: ₹'+
-fare+
+  }
 
-'<br><br>'+
-
-'🚕 Driver ko request bhej di gayi hai.'+
-
-'</div>';
-
-
-listenPassengerStatus(
-rideRef.key
-);
-
-
-}catch(error){
-
-alert(
-"Booking error: "+
-error.message
-);
-
+  return Math.round(base + distance * perKm);
 }
+
+
+/* ================= BOOK RIDE ================= */
+
+window.bookRide = async function(){
+
+  const name =
+    document.getElementById("passengerName")
+    .value.trim();
+
+  const phone =
+    document.getElementById("passengerPhone")
+    .value.trim();
+
+  const pickup =
+    document.getElementById("pickup")
+    .value.trim();
+
+  const drop =
+    document.getElementById("drop")
+    .value.trim();
+
+  const vehicle =
+    document.getElementById("vehicle").value;
+
+
+  if(!name || !phone || !pickup || !drop){
+
+    alert("Saari details bharna zaroori hai.");
+
+    return;
+  }
+
+  if(!pickupCoords || !dropCoords){
+
+    alert("Pehle Calculate Route karo.");
+
+    return;
+  }
+
+  const rideRef =
+    push(ref(db,"rides"));
+
+  currentRideId = rideRef.key;
+
+  const rideData = {
+
+    id: currentRideId,
+
+    passengerName:name,
+
+    passengerPhone:phone,
+
+    pickup:pickup,
+
+    drop:drop,
+
+    pickupLat:pickupCoords[0],
+
+    pickupLng:pickupCoords[1],
+
+    dropLat:dropCoords[0],
+
+    dropLng:dropCoords[1],
+
+    vehicle:vehicle,
+
+    distanceKm:window.lastDistanceKm || 0,
+
+    fare:window.lastFare || 0,
+
+    status:"requested",
+
+    driverName:"",
+
+    driverId:"",
+
+    rating:0,
+
+    createdAt:Date.now()
+
+  };
+
+
+  await set(rideRef,rideData);
+
+  currentRideData = rideData;
+
+  showPassengerStatus(rideData);
+
+  alert(
+    "Ride request bhej di gayi hai 🚕"
+  );
 
 };
 
 
-/* =========================
-PASSENGER STATUS
-========================= */
+/* ================= PASSENGER RIDE STATUS ================= */
 
-function listenPassengerStatus(rideId){
+function listenToRide(rideId){
 
-const rideRef=
-ref(db,"rides/"+rideId);
+  const rideRef =
+    ref(db,"rides/"+rideId);
 
-onValue(
-rideRef,
-(snapshot)=>{
+  onValue(rideRef,(snapshot)=>{
 
-const ride=snapshot.val();
+    const ride = snapshot.val();
 
-if(!ride)return;
+    if(!ride) return;
 
+    currentRideData = ride;
 
-if(ride.status==="accepted"){
+    showPassengerStatus(ride);
 
-document.getElementById(
-"bookingStatus"
-).innerHTML=
-
-'<div class="status">'+
-
-'🟢 <b>Driver Accepted!</b>'+
-'<br><br>'+
-
-'Driver: '+
-(ride.driverName||"Driver")+
-
-'<br><br>'+
-
-'🚕 Aapki ride accept ho gayi hai.'+
-
-'<br><br>'+
-
-'📍 Driver ki live location map par dekhi ja sakti hai.'+
-
-'</div>';
+  });
 
 }
 
 
-if(ride.status==="started"){
+function showPassengerStatus(ride){
 
-document.getElementById(
-"bookingStatus"
-).innerHTML=
+  const box =
+    document.getElementById("passengerStatus");
 
-'<div class="status">'+
+  let text = "";
 
-'🚕 <b>Ride Started</b>'+
-'<br><br>'+
+  if(ride.status === "requested"){
 
-'Driver: '+
-(ride.driverName||"Driver")+
+    text =
+      `🕐 Ride requested<br>
+       Vehicle: ${ride.vehicle}<br>
+       Fare: ₹${ride.fare}`;
 
-'</div>';
+  }
 
-}
+  else if(ride.status === "accepted"){
 
+    text =
+      `✅ Driver accepted<br>
+       Driver: ${ride.driverName || "Driver"}<br>
+       Fare: ₹${ride.fare}`;
 
-if(ride.status==="completed"){
+  }
 
-document.getElementById(
-"bookingStatus"
-).innerHTML=
+  else if(ride.status === "started"){
 
-'<div class="status">'+
+    text =
+      `▶️ Ride Started<br>
+       Driver: ${ride.driverName || "Driver"}<br>
+       Destination: ${ride.drop}`;
 
-'✅ <b>Ride Completed</b>'+
+  }
 
-'</div>';
+  else if(ride.status === "completed"){
 
-}
+    text =
+      `🏁 Ride Completed<br>
+       Fare: ₹${ride.fare}`;
 
+    document
+      .getElementById("ratingBox")
+      .classList.remove("hidden");
 
-if(ride.status==="rejected"){
+  }
 
-document.getElementById(
-"bookingStatus"
-).innerHTML=
+  else if(ride.status === "rejected"){
 
-'<div class="status">'+
+    text =
+      `❌ Driver ne ride reject kar di.`;
 
-'❌ <b>Ride Rejected</b>'+
+  }
 
-'<br><br>'+
-'Driver ne ride accept nahi ki.'+
-
-'</div>';
-
-}
-
-});
-
-}
-
-
-/* =========================
-DRIVER GO ONLINE
-========================= */
-
-window.goOnline=async function(){
-
-const name=
-document.getElementById(
-"driverName"
-).value.trim();
-
-
-if(!name){
-
-alert(
-"Pehle driver name bharo."
-);
-
-return;
+  box.innerHTML =
+    `<div class="status">${text}</div>`;
 
 }
 
 
-if(!navigator.geolocation){
-
-alert(
-"Is phone me location support nahi hai."
-);
-
-return;
-
-}
-
-
-document.getElementById(
-"driverStatus"
-).innerHTML=
-"📍 Location permission allow karo...";
-
-
-navigator.geolocation.getCurrentPosition(
-
-async function(position){
-
-const lat=
-position.coords.latitude;
-
-const lng=
-position.coords.longitude;
-
-
-const driverRef=
-ref(db,"drivers/demoDriver");
-
-
-await set(
-driverRef,
-{
-name:name,
-lat:lat,
-lng:lng,
-online:true,
-updatedAt:Date.now()
-}
-);
-
-
-document.getElementById(
-"driverStatus"
-).innerHTML=
-"🟢 Driver Online<br>📍 Live Location ON";
-
-
-showDriverOnMap(lat,lng);
-
-startDriverLocation();
-
-},
-
-function(){
-
-alert(
-"Location permission nahi mili. Phone ki Location ON karke dobara try karo."
-);
-
-},
-
-{
-enableHighAccuracy:true,
-timeout:10000,
-maximumAge:0
-}
-
-);
-
-};
-
-
-/* =========================
-DRIVER LIVE LOCATION
-========================= */
-
-function startDriverLocation(){
-
-if(driverWatchId!==null)
-return;
-
-
-driverWatchId=
-navigator.geolocation.watchPosition(
-
-async function(position){
-
-const lat=
-position.coords.latitude;
-
-const lng=
-position.coords.longitude;
-
-
-await update(
-ref(db,"drivers/demoDriver"),
-{
-lat:lat,
-lng:lng,
-online:true,
-updatedAt:Date.now()
-}
-);
-
-
-showDriverOnMap(lat,lng);
-
-},
-
-function(){
-
-document.getElementById(
-"driverStatus"
-).innerHTML=
-"⚠️ Driver location update nahi ho rahi.";
-
-},
-
-{
-enableHighAccuracy:true,
-maximumAge:5000,
-timeout:10000
-}
-
-);
-
-}
-
-
-/* =========================
-SHOW DRIVER MAP
-========================= */
-
-function showDriverOnMap(lat,lng){
-
-if(!driverMap)
-initDriverMap();
-
-
-if(driverMarker){
-
-driverMarker.setLatLng(
-[lat,lng]
-);
-
-}else{
-
-driverMarker=
-L.marker([lat,lng])
-.addTo(driverMap)
-.bindPopup("🚕 Aapki Location");
-
-}
-
-
-driverMap.setView(
-[lat,lng],
-15
-);
-
-}
-
-
-/* =========================
-DRIVER OFFLINE
-========================= */
-
-window.goOffline=async function(){
-
-if(driverWatchId!==null){
-
-navigator.geolocation.clearWatch(
-driverWatchId
-);
-
-driverWatchId=null;
-
-}
-
-
-await update(
-ref(db,"drivers/demoDriver"),
-{
-online:false,
-updatedAt:Date.now()
-}
-);
-
-
-document.getElementById(
-"driverStatus"
-).innerHTML=
-"🔴 Driver Offline";
-
-};
-
-
-/* =========================
-PASSENGER LIVE DRIVER
-========================= */
-
-function listenDriverLocation(){
-
-const driverRef=
-ref(db,"drivers/demoDriver");
-
-
-onValue(
-driverRef,
-function(snapshot){
-
-const driver=snapshot.val();
-
-if(!driver)
-return;
-
-if(!driver.online)
-return;
-
-if(!driver.lat || !driver.lng)
-return;
-
-
-showPassengerDriver(
-driver.lat,
-driver.lng
-);
-
-}
-);
-
-}
-
-
-/* =========================
-PASSENGER DRIVER MARKER
-========================= */
-
-function showPassengerDriver(lat,lng){
-
-if(!map)
-return;
-
-
-if(passengerDriverMarker){
-
-passengerDriverMarker.setLatLng(
-[lat,lng]
-);
-
-}else{
-
-passengerDriverMarker=
-L.marker([lat,lng])
-.addTo(map)
-.bindPopup("🚕 Driver");
-
-}
-
-}
-
-
-/* =========================
-DRIVER RIDE REQUESTS
-========================= */
+/* ================= DRIVER REQUESTS ================= */
 
 function listenForRides(){
 
-const ridesRef=
-ref(db,"rides");
+  const ridesRef =
+    ref(db,"rides");
 
+  onValue(ridesRef,(snapshot)=>{
+
+    const data = snapshot.val();
+
+    const box =
+      document.getElementById("rideRequests");
+
+    box.innerHTML = "";
+
+    if(!data){
+
+      box.innerText =
+        "No ride requests";
+
+      return;
+    }
+
+    Object.values(data).forEach(ride=>{
+
+      if(
+        ride.status === "requested" ||
+        ride.status === "accepted" ||
+        ride.status === "started"
+      ){
+
+        const div =
+          document.createElement("div");
+
+        div.className = "ride";
+
+        div.innerHTML = `
+
+          <b>👤 ${escapeHtml(ride.passengerName)}</b>
+
+          <p>
+          Pickup: ${escapeHtml(ride.pickup)}
+          </p>
+
+          <p>
+          Drop: ${escapeHtml(ride.drop)}
+          </p>
+
+          <p>
+          Vehicle: ${ride.vehicle}
+          </p>
+
+          <p>
+          Distance: ${Number(ride.distanceKm).toFixed(2)} km
+          </p>
+
+          <p>
+          Fare: ₹${ride.fare}
+          </p>
+
+          <p>
+          Status: <b>${ride.status}</b>
+          </p>
+
+          ${
+            ride.status === "requested"
+            ?
+            `
+            <button class="green"
+            onclick="acceptRide('${ride.id}')">
+            ✅ Accept
+            </button>
+
+            <button class="red"
+            onclick="rejectRide('${ride.id}')">
+            ❌ Reject
+            </button>
+            `
+            :
+            ""
+          }
+
+          ${
+            ride.status === "accepted"
+            ?
+            `
+            <button class="orange"
+            onclick="startRide('${ride.id}')">
+            ▶️ Start Ride
+            </button>
+            `
+            :
+            ""
+          }
+
+          ${
+            ride.status === "started"
+            ?
+            `
+            <button class="green"
+            onclick="completeRide('${ride.id}')">
+            🏁 Complete Ride
+            </button>
+            `
+            :
+            ""
+          }
+
+        `;
+
+        box.appendChild(div);
+
+      }
+
+    });
+
+  });
+
+}
+
+
+/* ================= ACCEPT ================= */
+
+window.acceptRide = async function(id){
+
+  await update(
+    ref(db,"rides/"+id),
+    {
+      status:"accepted",
+      driverName:"Demo Driver",
+      driverId:"demoDriver",
+      acceptedAt:Date.now()
+    }
+  );
+
+  alert("Ride accepted ✅");
+
+};
+
+
+/* ================= REJECT ================= */
+
+window.rejectRide = async function(id){
+
+  await update(
+    ref(db,"rides/"+id),
+    {
+      status:"rejected",
+      rejectedAt:Date.now()
+    }
+  );
+
+};
+
+
+/* ================= START ================= */
+
+window.startRide = async function(id){
+
+  await update(
+    ref(db,"rides/"+id),
+    {
+      status:"started",
+      startedAt:Date.now()
+    }
+  );
+
+  alert("Ride Started ▶️");
+
+};
+
+
+/* ================= COMPLETE ================= */
+
+window.completeRide = async function(id){
+
+  await update(
+    ref(db,"rides/"+id),
+    {
+      status:"completed",
+      completedAt:Date.now()
+    }
+  );
+
+  alert(
+    "Ride Completed 🏁 Passenger ab rating de sakta hai."
+  );
+
+};
+
+
+/* ================= RATING ================= */
+
+window.selectRating = function(rating){
+
+  currentRating = rating;
+
+  const stars =
+    document.querySelectorAll(".star");
+
+  stars.forEach((star,index)=>{
+
+    if(index < rating){
+
+      star.innerText = "★";
+
+    }else{
+
+      star.innerText = "☆";
+
+    }
+
+  });
+
+  document.getElementById("ratingText")
+  .innerText =
+    `${rating} / 5 ⭐`;
+
+};
+
+
+window.submitRating = async function(){
+
+  if(!currentRating){
+
+    alert("Pehle rating select karo.");
+
+    return;
+  }
+
+  if(!currentRideId && currentRideData){
+
+    currentRideId =
+      currentRideData.id;
+
+  }
+
+  if(!currentRideId){
+
+    alert("Active ride nahi mili.");
+
+    return;
+  }
+
+  await update(
+    ref(db,"rides/"+currentRideId),
+    {
+      rating:currentRating,
+      ratedAt:Date.now()
+    }
+  );
+
+  document.getElementById("ratingText")
+  .innerText =
+    "Thank you! Rating submit ho gayi ⭐";
+
+  document.querySelectorAll(".star")
+  .forEach(star=>{
+    star.style.pointerEvents="none";
+  });
+
+};
+
+
+/* ================= DRIVER ONLINE ================= */
+
+window.goOnline = function(){
+
+  document.getElementById("driverStatus")
+  .innerText =
+    "🟢 Driver Online";
+
+  if(!navigator.geolocation){
+
+    alert(
+      "Is browser me location available nahi hai."
+    );
+
+    return;
+  }
+
+  watchId =
+    navigator.geolocation.watchPosition(
+
+      async position=>{
+
+        const lat =
+          position.coords.latitude;
+
+        const lng =
+          position.coords.longitude;
+
+        await set(
+          ref(db,"drivers/demoDriver"),
+          {
+            name:"Demo Driver",
+            lat:lat,
+            lng:lng,
+            online:true,
+            updatedAt:Date.now()
+          }
+        );
+
+        if(driverMap){
+
+          driverMap.setView(
+            [lat,lng],
+            16
+          );
+
+          if(driverMarker){
+
+            driverMarker.setLatLng(
+              [lat,lng]
+            );
+
+          }else{
+
+            driverMarker =
+              L.marker([lat,lng])
+              .addTo(driverMap)
+              .bindPopup("🚕 Driver");
+
+          }
+
+        }
+
+      },
+
+      error=>{
+
+        console.error(error);
+
+        alert(
+          "Location permission allow karo."
+        );
+
+      },
+
+      {
+        enableHighAccuracy:true,
+        maximumAge:5000,
+        timeout:10000
+      }
+
+    );
+
+};
+
+
+window.goOffline = async function(){
+
+  if(watchId !== null){
+
+    navigator.geolocation
+      .clearWatch(watchId);
+
+    watchId = null;
+
+  }
+
+  await update(
+    ref(db,"drivers/demoDriver"),
+    {
+      online:false,
+      updatedAt:Date.now()
+    }
+  );
+
+  document.getElementById("driverStatus")
+  .innerText =
+    "🔴 Driver Offline";
+
+};
+
+
+/* ================= LIVE DRIVER ON PASSENGER MAP ================= */
+
+function listenForDriver(){
+
+  const driverRef =
+    ref(db,"drivers/demoDriver");
+
+  onValue(driverRef,(snapshot)=>{
+
+    const driver =
+      snapshot.val();
+
+    if(!driver) return;
+
+    if(!driver.online){
+
+      if(driverMarker){
+
+        map.removeLayer(driverMarker);
+
+        driverMarker = null;
+
+      }
+
+      return;
+    }
+
+    const position =
+      [driver.lat,driver.lng];
+
+    if(driverMarker){
+
+      driverMarker.setLatLng(position);
+
+    }else{
+
+      driverMarker =
+        L.marker(position)
+        .addTo(map)
+        .bindPopup("🚕 Your Driver");
+
+    }
+
+  });
+
+}
+
+
+/* ================= PASSENGER CURRENT RIDE ================= */
 
 onValue(
-ridesRef,
-(snapshot)=>{
+  ref(db,"rides"),
+  snapshot=>{
 
-const data=snapshot.val();
+    const data = snapshot.val();
 
-const box=
-document.getElementById(
-"rideRequests"
-);
+    if(!data) return;
 
-box.innerHTML="";
+    const rides =
+      Object.values(data);
 
+    const active =
+      rides
+      .filter(r =>
+        r.status !== "rejected" &&
+        r.status !== "completed"
+      )
+      .sort(
+        (a,b)=>
+        (b.createdAt||0)-
+        (a.createdAt||0)
+      )[0];
 
-if(!data){
+    if(active){
 
-box.innerHTML=
-"Abhi koi ride request nahi hai.";
+      currentRideId =
+        active.id;
 
-return;
+      currentRideData =
+        active;
 
-}
+      showPassengerStatus(active);
 
+      listenToRide(active.id);
 
-let found=false;
+    }
 
-
-Object.values(data)
-.reverse()
-.forEach(ride=>{
-
-if(ride.status!=="requested")
-return;
-
-
-found=true;
-
-
-const div=
-document.createElement("div");
-
-div.className="ride";
-
-
-div.innerHTML=
-
-'<b>🚕 New Ride Request</b>'+
-
-'<br><br>'+
-
-'👤 Passenger: '+
-ride.passengerName+
-
-'<br>'+
-
-'📞 Mobile: '+
-ride.phone+
-
-'<br>'+
-
-'📍 Pickup: '+
-ride.pickup+
-
-'<br>'+
-
-'🏁 Drop: '+
-ride.drop+
-
-'<br>'+
-
-'🚗 Vehicle: '+
-ride.vehicle+
-
-'<br>'+
-
-'📏 Distance: '+
-(ride.distanceKm||0)+
-' km'+
-
-'<br>'+
-
-'💰 Fare: ₹'+
-(ride.fare||0)+
-
-'<br><br>'+
-
-'<button class="green" '+
-'onclick="acceptRide(\''+
-ride.rideId+
-'\')">'+
-
-'✅ Accept Ride'+
-
-'</button>'+
-
-'<button class="red" '+
-'onclick="rejectRide(\''+
-ride.rideId+
-'\')">'+
-
-'❌ Reject'+
-
-'</button>';
-
-
-box.appendChild(div);
-
-});
-
-
-if(!found){
-
-box.innerHTML=
-"Abhi koi new ride request nahi hai.";
-
-}
-
-});
-
-}
-
-
-/* =========================
-ACCEPT RIDE
-========================= */
-
-window.acceptRide=
-async function(rideId){
-
-const driverName=
-document.getElementById(
-"driverName"
-).value.trim();
-
-
-if(!driverName){
-
-alert(
-"Driver name bharo."
-);
-
-return;
-
-}
-
-
-await update(
-ref(db,"rides/"+rideId),
-{
-status:"accepted",
-driverName:driverName
-}
+  }
 );
 
 
-alert(
-"✅ Ride Accepted!"
-);
+/* ================= HTML SECURITY ================= */
 
-};
+function escapeHtml(text){
 
+  return String(text)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 
-/* =========================
-REJECT RIDE
-========================= */
-
-window.rejectRide=
-async function(rideId){
-
-await update(
-ref(db,"rides/"+rideId),
-{
-status:"rejected"
 }
-);
-
-};
 
 </script>
 
