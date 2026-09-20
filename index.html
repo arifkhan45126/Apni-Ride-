@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Apni Ride</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+    font-family:Arial,sans-serif;
+      background:#f4f6f8;
+        color:#222;
+        }
+        header{
+          background:#111827;
+            color:white;
+              padding:18px;
+                text-align:center;
+                }
+                .container{
+                  max-width:600px;
+                    margin:auto;
+                      padding:18px;
+                      }
+                      .card{
+                        background:white;
+                          padding:18px;
+                            border-radius:18px;
+                              margin-bottom:15px;
+                                box-shadow:0 3px 12px #0001;
+                                }
+                                h2{margin-top:0}
+                                input,select,button{
+                                  width:100%;
+                                    padding:13px;
+                                      margin:7px 0;
+                                        border-radius:10px;
+                                          border:1px solid #ddd;
+                                            font-size:16px;
+                                            }
+                                            button{
+                                              background:#111827;
+                                                color:white;
+                                                  border:0;
+                                                    font-weight:bold;
+                                                    }
+                                                    button.green{background:#16a34a}
+                                                    button.red{background:#dc2626}
+                                                    button.blue{background:#2563eb}
+                                                    .status{
+                                                      padding:12px;
+                                                        border-radius:10px;
+                                                          background:#eef2ff;
+                                                            margin:10px 0;
+                                                            }
+                                                            .ride{
+                                                              border:1px solid #ddd;
+                                                                padding:14px;
+                                                                  border-radius:12px;
+                                                                    margin-top:10px;
+                                                                    }
+                                                                    .hidden{display:none}
+                                                                    .small{font-size:13px;color:#666}
+                                                                    </style>
+                                                                    </head>
+
+                                                                    <body>
+
+                                                                    <header>
+                                                                      <h1>🚕 Apni Ride</h1>
+                                                                        <div>Passenger + Driver</div>
+                                                                        </header>
+
+                                                                        <div class="container">
+
+                                                                        <!-- ROLE SELECT -->
+                                                                        <div class="card" id="roleBox">
+                                                                          <h2>Select Mode</h2>
+                                                                            <button class="blue" onclick="showPassenger()">👤 Passenger</button>
+                                                                              <button onclick="showDriver()">🚕 Driver</button>
+                                                                              </div>
+
+                                                                              <!-- PASSENGER -->
+                                                                              <div id="passenger" class="hidden">
+
+                                                                              <div class="card">
+                                                                              <h2>👤 Book Your Ride</h2>
+
+                                                                              <input id="pName" placeholder="Passenger Name">
+                                                                              <input id="pPhone" placeholder="Mobile Number">
+
+                                                                              <input id="pickup" placeholder="Pickup Location">
+                                                                              <input id="drop" placeholder="Drop Location">
+
+                                                                              <select id="vehicle">
+                                                                              <option value="Bike">🏍️ Bike</option>
+                                                                              <option value="Auto">🛺 Auto</option>
+                                                                              <option value="Car">🚗 Car</option>
+                                                                              </select>
+
+                                                                              <button class="green" onclick="bookRide()">🚕 Book Ride</button>
+
+                                                                              <div id="bookingStatus"></div>
+                                                                              </div>
+
+                                                                              </div>
+
+                                                                              <!-- DRIVER -->
+                                                                              <div id="driver" class="hidden">
+
+                                                                              <div class="card">
+                                                                              <h2>🚕 Driver Dashboard</h2>
+
+                                                                              <input id="driverName" placeholder="Driver Name">
+
+                                                                              <button class="green" onclick="goOnline()">🟢 Go Online</button>
+                                                                              <button class="red" onclick="goOffline()">🔴 Go Offline</button>
+
+                                                                              <div id="driverStatus" class="status">
+                                                                              Driver Offline
+                                                                              </div>
+                                                                              </div>
+
+                                                                              <div class="card">
+                                                                              <h2>📥 Ride Requests</h2>
+                                                                              <div id="rideRequests">
+                                                                              Waiting for ride requests...
+                                                                              </div>
+                                                                              </div>
+
+                                                                              </div>
+
+                                                                              </div>
+
+                                                                              <script type="module">
+
+                                                                              import { initializeApp }
+                                                                              from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+
+                                                                              import {
+                                                                                getDatabase,
+                                                                                  ref,
+                                                                                    push,
+                                                                                      set,
+                                                                                        onValue,
+                                                                                          update
+                                                                                          }
+                                                                                          from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+
+
+                                                                                          /* =========================
+                                                                                             FIREBASE CONFIG
+                                                                                             ========================= */
+
+                                                                                             const firebaseConfig = {
+
+                                                                                               apiKey: "AIzaSyD6u_Xa4YdDwMT8zoFZrO1dn6Qurc6pmcg",
+
+                                                                                                 authDomain: "apni-ride-c23f3.firebaseapp.com",
+
+                                                                                                   databaseURL:
+                                                                                                     "https://apni-ride-c23f3-default-rtdb.firebaseio.com",
+
+                                                                                                       projectId: "apni-ride-c23f3",
+
+                                                                                                         storageBucket:
+                                                                                                           "apni-ride-c23f3.firebasestorage.app",
+
+                                                                                                             messagingSenderId:
+                                                                                                               "537555369746",
+
+                                                                                                                 appId:
+                                                                                                                   "1:537555369746:web:5f5226a0eb5c8d8b83fdcb",
+
+                                                                                                                     measurementId:
+                                                                                                                       "G-22LLYKLYE3"
+                                                                                                                       };
+
+
+                                                                                                                       /* START FIREBASE */
+
+                                                                                                                       const app = initializeApp(firebaseConfig);
+
+                                                                                                                       const db = getDatabase(app);
+
+
+                                                                                                                       /* =========================
+                                                                                                                          ROLE
+                                                                                                                          ========================= */
+
+                                                                                                                          window.showPassenger = function(){
+
+                                                                                                                            document.getElementById("roleBox").classList.add("hidden");
+
+                                                                                                                              document.getElementById("passenger")
+                                                                                                                                .classList.remove("hidden");
+
+                                                                                                                                };
+
+
+                                                                                                                                window.showDriver = function(){
+
+                                                                                                                                  document.getElementById("roleBox").classList.add("hidden");
+
+                                                                                                                                    document.getElementById("driver")
+                                                                                                                                      .classList.remove("hidden");
+
+                                                                                                                                        listenForRides();
+
+                                                                                                                                        };
+
+
+                                                                                                                                        /* =========================
+                                                                                                                                           PASSENGER BOOK RIDE
+                                                                                                                                           ========================= */
+
+                                                                                                                                           window.bookRide = async function(){
+
+                                                                                                                                             const name =
+                                                                                                                                               document.getElementById("pName").value.trim();
+
+                                                                                                                                                 const phone =
+                                                                                                                                                   document.getElementById("pPhone").value.trim();
+
+                                                                                                                                                     const pickup =
+                                                                                                                                                       document.getElementById("pickup").value.trim();
+
+                                                                                                                                                         const drop =
+                                                                                                                                                           document.getElementById("drop").value.trim();
+
+                                                                                                                                                             const vehicle =
+                                                                                                                                                               document.getElementById("vehicle").value;
+
+
+                                                                                                                                                                 if(!name || !phone || !pickup || !drop){
+
+                                                                                                                                                                     alert("Please sab details bharo.");
+
+                                                                                                                                                                         return;
+                                                                                                                                                                           }
+
+
+                                                                                                                                                                             const rideRef =
+                                                                                                                                                                               push(ref(db,"rides"));
+
+
+                                                                                                                                                                                 const ride = {
+
+                                                                                                                                                                                     rideId: rideRef.key,
+
+                                                                                                                                                                                         passengerName:name,
+
+                                                                                                                                                                                             phone:phone,
+
+                                                                                                                                                                                                 pickup:pickup,
+
+                                                                                                                                                                                                     drop:drop,
+
+                                                                                                                                                                                                         vehicle:vehicle,
+
+                                                                                                                                                                                                             status:"requested",
+
+                                                                                                                                                                                   
