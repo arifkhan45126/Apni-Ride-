@@ -5,25 +5,32 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Apni Ride</title>
 
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
 <style>
 *{box-sizing:border-box}
+
 body{
   margin:0;
   font-family:Arial,sans-serif;
   background:#f4f6f8;
   color:#222;
 }
+
 header{
   background:#111827;
   color:white;
   padding:18px;
   text-align:center;
 }
+
 .container{
-  max-width:600px;
+  max-width:650px;
   margin:auto;
   padding:18px;
 }
+
 .card{
   background:white;
   padding:18px;
@@ -31,7 +38,9 @@ header{
   margin-bottom:15px;
   box-shadow:0 3px 12px #0001;
 }
+
 h2{margin-top:0}
+
 input,select,button{
   width:100%;
   padding:13px;
@@ -40,99 +49,190 @@ input,select,button{
   border:1px solid #ddd;
   font-size:16px;
 }
+
 button{
   background:#111827;
   color:white;
   border:0;
   font-weight:bold;
 }
+
 button.green{background:#16a34a}
 button.red{background:#dc2626}
 button.blue{background:#2563eb}
+
 .status{
   padding:12px;
   border-radius:10px;
   background:#eef2ff;
   margin:10px 0;
 }
+
 .ride{
   border:1px solid #ddd;
   padding:14px;
   border-radius:12px;
   margin-top:10px;
 }
+
 .hidden{display:none}
-.small{font-size:13px;color:#666}
+
+.small{
+  font-size:13px;
+  color:#666;
+}
+
+#map{
+  height:320px;
+  border-radius:15px;
+  margin-top:12px;
+}
+
+.fare{
+  background:#ecfdf5;
+  padding:15px;
+  border-radius:12px;
+  margin-top:10px;
+  font-size:17px;
+}
+
+.loading{
+  padding:10px;
+  text-align:center;
+}
 </style>
 </head>
 
 <body>
 
 <header>
-  <h1>🚕 Apni Ride</h1>
-  <div>Passenger + Driver</div>
+<h1>🚕 Apni Ride</h1>
+<div>Passenger + Driver</div>
 </header>
 
 <div class="container">
 
-<!-- ROLE SELECT -->
+<!-- ROLE -->
 <div class="card" id="roleBox">
-  <h2>Select Mode</h2>
-  <button class="blue" onclick="showPassenger()">👤 Passenger</button>
-  <button onclick="showDriver()">🚕 Driver</button>
+
+<h2>Select Mode</h2>
+
+<button class="blue" onclick="showPassenger()">
+👤 Passenger
+</button>
+
+<button onclick="showDriver()">
+🚕 Driver
+</button>
+
 </div>
+
 
 <!-- PASSENGER -->
 <div id="passenger" class="hidden">
 
 <div class="card">
+
 <h2>👤 Book Your Ride</h2>
 
-<input id="pName" placeholder="Passenger Name">
-<input id="pPhone" placeholder="Mobile Number">
+<input id="pName"
+placeholder="Passenger Name">
 
-<input id="pickup" placeholder="Pickup Location">
-<input id="drop" placeholder="Drop Location">
+<input id="pPhone"
+placeholder="Mobile Number"
+type="tel">
 
-<select id="vehicle">
+<input id="pickup"
+placeholder="Pickup Location">
+
+<input id="drop"
+placeholder="Drop Location">
+
+<button class="blue"
+onclick="findRoute()">
+🗺️ Find Route
+</button>
+
+<div id="map"></div>
+
+<div id="routeInfo"></div>
+
+<select id="vehicle"
+onchange="calculateFare()">
+
 <option value="Bike">🏍️ Bike</option>
 <option value="Auto">🛺 Auto</option>
 <option value="Car">🚗 Car</option>
+
 </select>
 
-<button class="green" onclick="bookRide()">🚕 Book Ride</button>
+<div id="fareBox"></div>
+
+<button class="green"
+onclick="bookRide()">
+
+🚕 Book Ride
+
+</button>
 
 <div id="bookingStatus"></div>
+
 </div>
 
 </div>
+
 
 <!-- DRIVER -->
 <div id="driver" class="hidden">
 
 <div class="card">
+
 <h2>🚕 Driver Dashboard</h2>
 
-<input id="driverName" placeholder="Driver Name">
+<input id="driverName"
+placeholder="Driver Name">
 
-<button class="green" onclick="goOnline()">🟢 Go Online</button>
-<button class="red" onclick="goOffline()">🔴 Go Offline</button>
+<button class="green"
+onclick="goOnline()">
 
-<div id="driverStatus" class="status">
+🟢 Go Online
+
+</button>
+
+<button class="red"
+onclick="goOffline()">
+
+🔴 Go Offline
+
+</button>
+
+<div id="driverStatus"
+class="status">
+
 Driver Offline
+
 </div>
+
 </div>
+
 
 <div class="card">
+
 <h2>📥 Ride Requests</h2>
+
 <div id="rideRequests">
 Waiting for ride requests...
 </div>
-</div>
 
 </div>
 
 </div>
+
+</div>
+
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 
 <script type="module">
 
@@ -140,453 +240,859 @@ import { initializeApp }
 from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 
 import {
-  getDatabase,
-  ref,
-  push,
-  set,
-  onValue,
-  update
+getDatabase,
+ref,
+push,
+set,
+onValue,
+update
 }
 from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 
 /* =========================
-   FIREBASE CONFIG
+FIREBASE
 ========================= */
 
 const firebaseConfig = {
 
-  apiKey: "AIzaSyD6u_Xa4YdDwMT8zoFZrO1dn6Qurc6pmcg",
+apiKey:
+"AIzaSyD6u_Xa4YdDwMT8zoFZrO1dn6Qurc6pmcg",
 
-  authDomain: "apni-ride-c23f3.firebaseapp.com",
+authDomain:
+"apni-ride-c23f3.firebaseapp.com",
 
-  databaseURL:
-  "https://apni-ride-c23f3-default-rtdb.firebaseio.com",
+databaseURL:
+"https://apni-ride-c23f3-default-rtdb.firebaseio.com",
 
-  projectId: "apni-ride-c23f3",
+projectId:
+"apni-ride-c23f3",
 
-  storageBucket:
-  "apni-ride-c23f3.firebasestorage.app",
+storageBucket:
+"apni-ride-c23f3.firebasestorage.app",
 
-  messagingSenderId:
-  "537555369746",
+messagingSenderId:
+"537555369746",
 
-  appId:
-  "1:537555369746:web:5f5226a0eb5c8d8b83fdcb",
+appId:
+"1:537555369746:web:5f5226a0eb5c8d8b83fdcb",
 
-  measurementId:
-  "G-22LLYKLYE3"
+measurementId:
+"G-22LLYKLYE3"
+
 };
 
+const app=initializeApp(firebaseConfig);
 
-/* START FIREBASE */
-
-const app = initializeApp(firebaseConfig);
-
-const db = getDatabase(app);
+const db=getDatabase(app);
 
 
 /* =========================
-   ROLE
+MAP VARIABLES
 ========================= */
 
-window.showPassenger = function(){
+let map=null;
 
-  document.getElementById("roleBox").classList.add("hidden");
+let routeLayer=null;
 
-  document.getElementById("passenger")
-  .classList.remove("hidden");
+let pickupCoords=null;
 
-};
+let dropCoords=null;
 
-
-window.showDriver = function(){
-
-  document.getElementById("roleBox").classList.add("hidden");
-
-  document.getElementById("driver")
-  .classList.remove("hidden");
-
-  listenForRides();
-
-};
+let distanceKm=0;
 
 
 /* =========================
-   PASSENGER BOOK RIDE
+PASSENGER
 ========================= */
 
-window.bookRide = async function(){
+window.showPassenger=function(){
 
-  const name =
-  document.getElementById("pName").value.trim();
+document.getElementById("roleBox")
+.classList.add("hidden");
 
-  const phone =
-  document.getElementById("pPhone").value.trim();
+document.getElementById("passenger")
+.classList.remove("hidden");
 
-  const pickup =
-  document.getElementById("pickup").value.trim();
-
-  const drop =
-  document.getElementById("drop").value.trim();
-
-  const vehicle =
-  document.getElementById("vehicle").value;
-
-
-  if(!name || !phone || !pickup || !drop){
-
-    alert("Please sab details bharo.");
-
-    return;
-  }
-
-
-  const rideRef =
-  push(ref(db,"rides"));
-
-
-  const ride = {
-
-    rideId: rideRef.key,
-
-    passengerName:name,
-
-    phone:phone,
-
-    pickup:pickup,
-
-    drop:drop,
-
-    vehicle:vehicle,
-
-    status:"requested",
-
-    driverName:"",
-
-    createdAt:Date.now()
-
-  };
-
-
-  try{
-
-    await set(rideRef,ride);
-
-    document.getElementById("bookingStatus")
-    .innerHTML = `
-
-      <div class="status">
-
-      ✅ <b>Ride Request Sent!</b><br><br>
-
-      Booking ID:<br>
-      <b>${rideRef.key}</b><br><br>
-
-      🚕 Driver ko request bhej di gayi hai.
-
-      </div>
-
-    `;
-
-    listenPassengerStatus(rideRef.key);
-
-  }catch(error){
-
-    alert("Booking error: "+error.message);
-
-  }
+initMap();
 
 };
 
 
 /* =========================
-   PASSENGER STATUS
+DRIVER
+========================= */
+
+window.showDriver=function(){
+
+document.getElementById("roleBox")
+.classList.add("hidden");
+
+document.getElementById("driver")
+.classList.remove("hidden");
+
+listenForRides();
+
+};
+
+
+/* =========================
+MAP
+========================= */
+
+function initMap(){
+
+if(map) return;
+
+map=L.map("map").setView(
+[20.4140,72.8328],
+13
+);
+
+L.tileLayer(
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+{
+maxZoom:19,
+attribution:"© OpenStreetMap"
+}
+).addTo(map);
+
+}
+
+
+/* =========================
+GEOCODING
+========================= */
+
+async function getCoordinates(place){
+
+const url=
+"https://nominatim.openstreetmap.org/search?format=json&limit=1&q="
++encodeURIComponent(place);
+
+const response=await fetch(url);
+
+const data=await response.json();
+
+if(!data.length){
+
+throw new Error(
+"Location nahi mili: "+place
+);
+
+}
+
+return[
+parseFloat(data[0].lat),
+parseFloat(data[0].lon)
+];
+
+}
+
+
+/* =========================
+FIND ROUTE
+========================= */
+
+window.findRoute=async function(){
+
+const pickup=
+document.getElementById("pickup")
+.value.trim();
+
+const drop=
+document.getElementById("drop")
+.value.trim();
+
+if(!pickup || !drop){
+
+alert("Pickup aur Drop dono bharo.");
+
+return;
+
+}
+
+const info=
+document.getElementById("routeInfo");
+
+info.innerHTML=
+'<div class="loading">🔎 Route find ho raha hai...</div>';
+
+try{
+
+pickupCoords=
+await getCoordinates(pickup);
+
+dropCoords=
+await getCoordinates(drop);
+
+
+const routeUrl=
+"https://router.project-osrm.org/route/v1/driving/"
++
+pickupCoords[1]+","+pickupCoords[0]
++
+";"
++
+dropCoords[1]+","+dropCoords[0]
++
+"?overview=full&geometries=geojson";
+
+
+const response=
+await fetch(routeUrl);
+
+const data=
+await response.json();
+
+
+if(data.code!=="Ok"){
+
+throw new Error("Route nahi mila.");
+
+}
+
+
+const route=data.routes[0];
+
+distanceKm=
+route.distance/1000;
+
+
+if(routeLayer){
+
+map.removeLayer(routeLayer);
+
+}
+
+
+routeLayer=
+L.geoJSON(
+route.geometry
+).addTo(map);
+
+
+map.fitBounds(
+routeLayer.getBounds(),
+{padding:[20,20]}
+);
+
+
+L.marker(pickupCoords)
+.addTo(map)
+.bindPopup("📍 Pickup")
+.openPopup();
+
+
+L.marker(dropCoords)
+.addTo(map)
+.bindPopup("🏁 Drop");
+
+
+info.innerHTML=
+
+'<div class="status">'+
+'📏 Distance: <b>'+
+distanceKm.toFixed(2)+
+' km</b>'+
+'</div>';
+
+
+calculateFare();
+
+}catch(error){
+
+info.innerHTML=
+'<div class="status">'+
+'❌ '+error.message+
+'</div>';
+
+}
+
+};
+
+
+/* =========================
+FARE
+========================= */
+
+window.calculateFare=function(){
+
+if(!distanceKm){
+
+document.getElementById("fareBox")
+.innerHTML="";
+
+return;
+
+}
+
+const vehicle=
+document.getElementById("vehicle").value;
+
+
+let base=0;
+
+let perKm=0;
+
+
+if(vehicle==="Bike"){
+
+base=30;
+perKm=10;
+
+}
+
+if(vehicle==="Auto"){
+
+base=40;
+perKm=14;
+
+}
+
+if(vehicle==="Car"){
+
+base=60;
+perKm=18;
+
+}
+
+
+let fare=
+Math.round(
+base+(distanceKm*perKm)
+);
+
+
+document.getElementById("fareBox")
+.innerHTML=
+
+'<div class="fare">'+
+'💰 Estimated Fare: <b>₹'+
+fare+
+'</b><br>'+
+'<span class="small">'+
+vehicle+
+' • '+
+distanceKm.toFixed(2)+
+' km</span>'+
+'</div>';
+
+};
+
+
+/* =========================
+BOOK RIDE
+========================= */
+
+window.bookRide=async function(){
+
+const name=
+document.getElementById("pName")
+.value.trim();
+
+const phone=
+document.getElementById("pPhone")
+.value.trim();
+
+const pickup=
+document.getElementById("pickup")
+.value.trim();
+
+const drop=
+document.getElementById("drop")
+.value.trim();
+
+const vehicle=
+document.getElementById("vehicle")
+.value;
+
+
+if(
+!name ||
+!phone ||
+!pickup ||
+!drop
+){
+
+alert("Please sab details bharo.");
+
+return;
+
+}
+
+
+if(!distanceKm){
+
+alert(
+"Pehle Find Route dabao."
+);
+
+return;
+
+}
+
+
+let base=0;
+
+let perKm=0;
+
+
+if(vehicle==="Bike"){
+
+base=30;
+perKm=10;
+
+}
+
+if(vehicle==="Auto"){
+
+base=40;
+perKm=14;
+
+}
+
+if(vehicle==="Car"){
+
+base=60;
+perKm=18;
+
+}
+
+
+const fare=
+Math.round(
+base+(distanceKm*perKm)
+);
+
+
+const rideRef=
+push(ref(db,"rides"));
+
+
+const ride={
+
+rideId:rideRef.key,
+
+passengerName:name,
+
+phone:phone,
+
+pickup:pickup,
+
+drop:drop,
+
+vehicle:vehicle,
+
+distanceKm:
+Number(distanceKm.toFixed(2)),
+
+fare:fare,
+
+status:"requested",
+
+driverName:"",
+
+createdAt:Date.now()
+
+};
+
+
+try{
+
+await set(
+rideRef,
+ride
+);
+
+
+document.getElementById(
+"bookingStatus"
+).innerHTML=
+
+'<div class="status">'+
+
+'✅ <b>Ride Request Sent!</b>'+
+'<br><br>'+
+
+'Booking ID:<br>'+
+'<b>'+rideRef.key+'</b>'+
+
+'<br><br>'+
+
+'📏 Distance: '+
+distanceKm.toFixed(2)+
+' km<br>'+
+
+'💰 Fare: ₹'+
+fare+
+
+'<br><br>'+
+
+'🚕 Driver ko request bhej di gayi hai.'+
+
+'</div>';
+
+
+listenPassengerStatus(
+rideRef.key
+);
+
+
+}catch(error){
+
+alert(
+"Booking error: "+
+error.message
+);
+
+}
+
+};
+
+
+/* =========================
+PASSENGER STATUS
 ========================= */
 
 function listenPassengerStatus(rideId){
 
-  const rideRef =
-  ref(db,"rides/"+rideId);
+const rideRef=
+ref(db,"rides/"+rideId);
 
-  onValue(rideRef,(snapshot)=>{
+onValue(
+rideRef,
+(snapshot)=>{
 
-    const ride = snapshot.val();
+const ride=snapshot.val();
 
-    if(!ride)return;
+if(!ride)return;
 
 
-    if(ride.status==="accepted"){
+if(ride.status==="accepted"){
 
-      document.getElementById("bookingStatus")
-      .innerHTML = `
+document.getElementById(
+"bookingStatus"
+).innerHTML=
 
-      <div class="status">
+'<div class="status">'+
 
-      🟢 <b>Driver Accepted!</b><br><br>
+'🟢 <b>Driver Accepted!</b>'+
+'<br><br>'+
 
-      Driver: ${ride.driverName || "Driver"}<br>
+'Driver: '+
+(ride.driverName||"Driver")+
 
-      🚕 Aapki ride accept ho gayi hai.
+'<br><br>'+
 
-      </div>
+'🚕 Aapki ride accept ho gayi hai.'+
 
-      `;
+'</div>';
 
-    }
+}
 
-    if(ride.status==="started"){
 
-      document.getElementById("bookingStatus")
-      .innerHTML = `
+if(ride.status==="started"){
 
-      <div class="status">
+document.getElementById(
+"bookingStatus"
+).innerHTML=
 
-      🚕 <b>Ride Started</b><br><br>
+'<div class="status">'+
 
-      Driver: ${ride.driverName || "Driver"}
+'🚕 <b>Ride Started</b>'+
+'<br><br>'+
 
-      </div>
+'Driver: '+
+(ride.driverName||"Driver")+
 
-      `;
+'</div>';
 
-    }
+}
 
-    if(ride.status==="completed"){
 
-      document.getElementById("bookingStatus")
-      .innerHTML = `
+if(ride.status==="completed"){
 
-      <div class="status">
+document.getElementById(
+"bookingStatus"
+).innerHTML=
 
-      ✅ <b>Ride Completed</b>
+'<div class="status">'+
 
-      </div>
+'✅ <b>Ride Completed</b>'+
 
-      `;
+'</div>';
 
-    }
+}
 
-  });
+
+if(ride.status==="rejected"){
+
+document.getElementById(
+"bookingStatus"
+).innerHTML=
+
+'<div class="status">'+
+
+'❌ <b>Ride Rejected</b>'+
+
+'<br><br>'+
+'Driver ne ride accept nahi ki.'+
+
+'</div>';
+
+}
+
+});
 
 }
 
 
 /* =========================
-   DRIVER ONLINE
+DRIVER ONLINE
 ========================= */
 
-window.goOnline = function(){
+window.goOnline=function(){
 
-  const name =
-  document.getElementById("driverName")
-  .value.trim();
-
-
-  if(!name){
-
-    alert("Pehle driver name bharo.");
-
-    return;
-
-  }
+const name=
+document.getElementById(
+"driverName"
+).value.trim();
 
 
-  document.getElementById("driverStatus")
-  .innerHTML =
-  "🟢 Driver Online — Ride requests dekh raha hai.";
+if(!name){
+
+alert(
+"Pehle driver name bharo."
+);
+
+return;
+
+}
+
+
+document.getElementById(
+"driverStatus"
+).innerHTML=
+
+"🟢 Driver Online — Ride requests dekh raha hai.";
 
 };
 
 
 /* =========================
-   DRIVER OFFLINE
+DRIVER OFFLINE
 ========================= */
 
-window.goOffline = function(){
+window.goOffline=function(){
 
-  document.getElementById("driverStatus")
-  .innerHTML =
-  "🔴 Driver Offline";
+document.getElementById(
+"driverStatus"
+).innerHTML=
+
+"🔴 Driver Offline";
 
 };
 
 
 /* =========================
-   LISTEN FOR NEW RIDES
+RIDE REQUESTS
 ========================= */
 
 function listenForRides(){
 
-  const ridesRef =
-  ref(db,"rides");
+const ridesRef=
+ref(db,"rides");
 
-  onValue(ridesRef,(snapshot)=>{
+onValue(
+ridesRef,
+(snapshot)=>{
 
-    const data = snapshot.val();
+const data=snapshot.val();
 
-    const box =
-    document.getElementById("rideRequests");
+const box=
+document.getElementById(
+"rideRequests"
+);
 
-    box.innerHTML = "";
-
-
-    if(!data){
-
-      box.innerHTML =
-      "Abhi koi ride request nahi hai.";
-
-      return;
-
-    }
+box.innerHTML="";
 
 
-    let found = false;
+if(!data){
+
+box.innerHTML=
+"Abhi koi ride request nahi hai.";
+
+return;
+
+}
 
 
-    Object.values(data).reverse()
-    .forEach(ride=>{
-
-      if(ride.status !== "requested")
-        return;
+let found=false;
 
 
-      found = true;
+Object.values(data)
+.reverse()
+.forEach(ride=>{
+
+if(
+ride.status!=="requested"
+)return;
 
 
-      const div =
-      document.createElement("div");
-
-      div.className="ride";
+found=true;
 
 
-      div.innerHTML = `
+const div=
+document.createElement("div");
 
-      <b>🚕 New Ride Request</b>
-
-      <br><br>
-
-      👤 Passenger:
-      ${ride.passengerName}
-
-      <br>
-
-      📞 Mobile:
-      ${ride.phone}
-
-      <br>
-
-      📍 Pickup:
-      ${ride.pickup}
-
-      <br>
-
-      🏁 Drop:
-      ${ride.drop}
-
-      <br>
-
-      🚗 Vehicle:
-      ${ride.vehicle}
-
-      <br><br>
-
-      <button
-      class="green"
-      onclick="acceptRide('${ride.rideId}')">
-
-      ✅ Accept Ride
-
-      </button>
-
-      <button
-      class="red"
-      onclick="rejectRide('${ride.rideId}')">
-
-      ❌ Reject
-
-      </button>
-
-      `;
+div.className="ride";
 
 
-      box.appendChild(div);
+div.innerHTML=
 
-    });
+'<b>🚕 New Ride Request</b>'+
+
+'<br><br>'+
+
+'👤 Passenger: '+
+ride.passengerName+
+
+'<br>'+
+
+'📞 Mobile: '+
+ride.phone+
+
+'<br>'+
+
+'📍 Pickup: '+
+ride.pickup+
+
+'<br>'+
+
+'🏁 Drop: '+
+ride.drop+
+
+'<br>'+
+
+'🚗 Vehicle: '+
+ride.vehicle+
+
+'<br>'+
+
+'📏 Distance: '+
+(ride.distanceKm||0)+
+' km'+
+
+'<br>'+
+
+'💰 Fare: ₹'+
+(ride.fare||0)+
+
+'<br><br>'+
+
+'<button class="green" '+
+'onclick="acceptRide(\''+
+ride.rideId+
+'\')">'+
+
+'✅ Accept Ride'+
+
+'</button>'+
+
+'<button class="red" '+
+'onclick="rejectRide(\''+
+ride.rideId+
+'\')">'+
+
+'❌ Reject'+
+
+'</button>';
 
 
-    if(!found){
+box.appendChild(div);
 
-      box.innerHTML =
-      "Abhi koi new ride request nahi hai.";
+});
 
-    }
 
-  });
+if(!found){
+
+box.innerHTML=
+"Abhi koi new ride request nahi hai.";
+
+}
+
+});
 
 }
 
 
 /* =========================
-   ACCEPT RIDE
+ACCEPT
 ========================= */
 
-window.acceptRide = async function(rideId){
+window.acceptRide=
+async function(rideId){
 
-  const driverName =
-  document.getElementById("driverName")
-  .value.trim();
-
-
-  if(!driverName){
-
-    alert("Driver name bharo.");
-
-    return;
-
-  }
+const driverName=
+document.getElementById(
+"driverName"
+).value.trim();
 
 
-  await update(
-    ref(db,"rides/"+rideId),
+if(!driverName){
 
-    {
+alert(
+"Driver name bharo."
+);
 
-      status:"accepted",
+return;
 
-      driverName:driverName
-
-    }
-
-  );
+}
 
 
-  alert("✅ Ride Accepted!");
+await update(
+ref(db,"rides/"+rideId),
+
+{
+
+status:"accepted",
+
+driverName:driverName
+
+}
+
+);
+
+
+alert(
+"✅ Ride Accepted!"
+);
 
 };
 
 
 /* =========================
-   REJECT RIDE
+REJECT
 ========================= */
 
-window.rejectRide = async function(rideId){
+window.rejectRide=
+async function(rideId){
 
-  await update(
+await update(
+ref(db,"rides/"+rideId),
 
-    ref(db,"rides/"+rideId),
+{
 
-    {
+status:"rejected"
 
-      status:"rejected"
+}
 
-    }
-
-  );
+);
 
 };
 
 </script>
 
 </body>
-</html>
+  </html>
