@@ -1,20 +1,453 @@
 <!DOCTYPE html>
-<html>
-<body style="text-align:center;padding:40px">
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<title>Apni Ride</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#f3f4f6;
+}
+
+header{
+  background:#111827;
+  color:white;
+  text-align:center;
+  padding:20px;
+}
+
+.container{
+  max-width:650px;
+  margin:auto;
+  padding:15px;
+}
+
+.card{
+  background:white;
+  padding:20px;
+  margin:15px 0;
+  border-radius:15px;
+  box-shadow:0 3px 12px #ddd;
+}
+
+button{
+  width:100%;
+  padding:15px;
+  margin:8px 0;
+  border:0;
+  border-radius:10px;
+  font-size:17px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.blue{
+  background:#2563eb;
+  color:white;
+}
+
+.black{
+  background:#111827;
+  color:white;
+}
+
+.green{
+  background:#16a34a;
+  color:white;
+}
+
+input{
+  width:100%;
+  padding:13px;
+  margin:7px 0;
+  box-sizing:border-box;
+  border:1px solid #ccc;
+  border-radius:8px;
+  font-size:16px;
+}
+
+.hidden{
+  display:none;
+}
+
+#map{
+  height:350px;
+  border-radius:12px;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
 <h1>🚕 Apni Ride</h1>
+<p>Your Ride, Your Way</p>
+</header>
 
-<button onclick="alert('Passenger working!')"
-style="padding:20px;font-size:20px">
+
+<div class="container">
+
+
+<!-- HOME -->
+
+<div id="home" class="card">
+
+<h2>Choose Mode</h2>
+
+<button class="blue" onclick="showPassenger()">
 👤 Passenger
 </button>
 
-<br><br>
-
-<button onclick="alert('Driver working!')"
-style="padding:20px;font-size:20px">
+<button class="black" onclick="showDriver()">
 🚗 Driver
 </button>
+
+</div>
+
+
+<!-- PASSENGER -->
+
+<div id="passenger" class="hidden">
+
+<div class="card">
+
+<h2>👤 Passenger</h2>
+
+<input
+id="name"
+placeholder="Your Name">
+
+<input
+id="pickup"
+placeholder="Pickup Location">
+
+<input
+id="drop"
+placeholder="Drop Location">
+
+
+<h3>Vehicle</h3>
+
+<button class="blue"
+onclick="chooseVehicle('Bike')">
+🏍️ Bike
+</button>
+
+<button class="blue"
+onclick="chooseVehicle('Auto')">
+🛺 Auto
+</button>
+
+<button class="blue"
+onclick="chooseVehicle('Car')">
+🚗 Car
+</button>
+
+
+<p id="vehicle">
+Vehicle: Not Selected
+</p>
+
+
+<button class="green"
+onclick="calculateFare()">
+💰 Calculate Fare
+</button>
+
+
+<button class="black"
+onclick="goHome()">
+← Back
+</button>
+
+</div>
+
+
+<div class="card">
+
+<h2>🗺️ Map</h2>
+
+<div id="map"></div>
+
+</div>
+
+
+<div id="result"
+class="card hidden">
+</div>
+
+</div>
+
+
+<!-- DRIVER -->
+
+<div id="driver" class="hidden">
+
+<div class="card">
+
+<h2>🚗 Driver Dashboard</h2>
+
+<input
+id="driverName"
+placeholder="Driver Name">
+
+<button class="green"
+onclick="goOnline()">
+🟢 Go Online
+</button>
+
+<button class="black"
+onclick="goHome()">
+← Back
+</button>
+
+<p id="driverStatus">
+🔴 Driver Offline
+</p>
+
+</div>
+
+</div>
+
+
+</div>
+
+
+<script
+src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+</script>
+
+
+<script>
+
+let vehicle="";
+
+let map;
+
+
+/* PASSENGER */
+
+function showPassenger(){
+
+document
+.getElementById("home")
+.classList.add("hidden");
+
+document
+.getElementById("driver")
+.classList.add("hidden");
+
+document
+.getElementById("passenger")
+.classList.remove("hidden");
+
+setTimeout(function(){
+
+if(map) return;
+
+map=L.map("map")
+.setView([20.42,72.83],12);
+
+L.tileLayer(
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+{
+attribution:"© OpenStreetMap"
+}
+).addTo(map);
+
+},300);
+
+}
+
+
+/* DRIVER */
+
+function showDriver(){
+
+document
+.getElementById("home")
+.classList.add("hidden");
+
+document
+.getElementById("passenger")
+.classList.add("hidden");
+
+document
+.getElementById("driver")
+.classList.remove("hidden");
+
+}
+
+
+/* HOME */
+
+function goHome(){
+
+document
+.getElementById("home")
+.classList.remove("hidden");
+
+document
+.getElementById("passenger")
+.classList.add("hidden");
+
+document
+.getElementById("driver")
+.classList.add("hidden");
+
+}
+
+
+/* VEHICLE */
+
+function chooseVehicle(type){
+
+vehicle=type;
+
+document
+.getElementById("vehicle")
+.innerHTML=
+"Vehicle: <b>"+type+"</b>";
+
+}
+
+
+/* FARE */
+
+function calculateFare(){
+
+let name=
+document.getElementById("name").value;
+
+let pickup=
+document.getElementById("pickup").value;
+
+let drop=
+document.getElementById("drop").value;
+
+
+if(!name || !pickup || !drop){
+
+alert(
+"Name, Pickup aur Drop fill karo"
+);
+
+return;
+
+}
+
+
+if(!vehicle){
+
+alert(
+"Vehicle select karo"
+);
+
+return;
+
+}
+
+
+let fare=0;
+
+
+if(vehicle==="Bike"){
+fare=50;
+}
+
+if(vehicle==="Auto"){
+fare=80;
+}
+
+if(vehicle==="Car"){
+fare=120;
+}
+
+
+document
+.getElementById("result")
+.classList.remove("hidden");
+
+
+document
+.getElementById("result")
+.innerHTML=
+
+"<h2>🚕 Ride Details</h2>"+
+
+"<p>Name: <b>"+name+"</b></p>"+
+
+"<p>Pickup: <b>"+pickup+"</b></p>"+
+
+"<p>Drop: <b>"+drop+"</b></p>"+
+
+"<p>Vehicle: <b>"+vehicle+"</b></p>"+
+
+"<h2>Estimated Fare: ₹"+
+fare+
+"</h2>"+
+
+"<button class='green' "+
+"onclick='bookRide()'>"+
+"🚕 Book Ride"+
+"</button>";
+
+}
+
+
+/* BOOK */
+
+function bookRide(){
+
+document
+.getElementById("result")
+.innerHTML+=
+
+"<h3>✅ Ride Request Sent!</h3>"+
+"<p>Driver search ho raha hai...</p>";
+
+}
+
+
+/* DRIVER */
+
+function goOnline(){
+
+let name=
+document
+.getElementById("driverName")
+.value;
+
+
+if(!name){
+
+alert(
+"Driver name likho"
+);
+
+return;
+
+}
+
+
+document
+.getElementById("driverStatus")
+.innerHTML=
+
+"🟢 Driver Online - "+
+name;
+
+}
+
+</script>
 
 </body>
 </html>
