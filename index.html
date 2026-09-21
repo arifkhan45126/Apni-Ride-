@@ -6,10 +6,8 @@
 
 <title>Apni Ride</title>
 
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-/>
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
 *{
@@ -27,20 +25,16 @@ header{
   background:#111827;
   color:white;
   text-align:center;
-  padding:20px 10px;
+  padding:18px;
 }
 
 header h1{
   margin:0;
-  font-size:30px;
-}
-
-header p{
-  margin:7px 0 0;
+  font-size:28px;
 }
 
 .container{
-  max-width:900px;
+  max-width:700px;
   margin:auto;
   padding:15px;
 }
@@ -50,93 +44,91 @@ header p{
   padding:18px;
   margin-bottom:15px;
   border-radius:15px;
-  box-shadow:0 3px 12px rgba(0,0,0,.10);
+  box-shadow:0 4px 15px rgba(0,0,0,.08);
 }
 
-input,
-select{
+h2{
+  margin-top:0;
+}
+
+input,select{
   width:100%;
   padding:13px;
-  margin:6px 0;
-  border:1px solid #d1d5db;
-  border-radius:8px;
+  margin:7px 0;
+  border:1px solid #ccc;
+  border-radius:9px;
   font-size:16px;
 }
 
 button{
   width:100%;
-  padding:13px;
-  margin-top:8px;
+  padding:14px;
+  margin-top:10px;
   border:0;
-  border-radius:9px;
-  background:#2563eb;
-  color:white;
+  border-radius:10px;
   font-size:16px;
+  font-weight:bold;
   cursor:pointer;
 }
 
-button:active{
-  transform:scale(.98);
+.blue{
+  background:#2563eb;
+  color:white;
 }
 
 .green{
   background:#16a34a;
+  color:white;
 }
 
 .red{
   background:#dc2626;
+  color:white;
 }
 
-.orange{
-  background:#ea580c;
-}
-
-.gray{
-  background:#6b7280;
+.black{
+  background:#111827;
+  color:white;
 }
 
 .hidden{
-  display:none !important;
+  display:none;
+}
+
+.vehicle{
+  display:flex;
+  gap:7px;
+}
+
+.vehicle button{
+  background:#e5e7eb;
+  color:#111;
+}
+
+.vehicle button.active{
+  background:#2563eb;
+  color:white;
 }
 
 .status{
   background:#eef2ff;
-  padding:13px;
+  padding:12px;
   margin-top:10px;
-  border-radius:9px;
-  line-height:1.7;
+  border-radius:10px;
 }
 
-#map,
+#passengerMap,
 #driverMap{
-  height:350px;
-  width:100%;
+  height:300px;
   border-radius:12px;
   margin-top:10px;
 }
 
 .ride{
   border:1px solid #ddd;
-  padding:13px;
-  border-radius:10px;
+  padding:12px;
   margin-top:10px;
-}
-
-.stars{
-  text-align:center;
-  margin:15px 0;
-}
-
-.star{
-  display:inline-block;
-  font-size:38px;
-  cursor:pointer;
-  margin:0 3px;
-}
-
-.ratingText{
-  text-align:center;
-  font-weight:bold;
+  border-radius:10px;
 }
 </style>
 </head>
@@ -144,25 +136,25 @@ button:active{
 <body>
 
 <header>
-  <h1>🚕 Apni Ride</h1>
-  <p>Ride Booking App</p>
+<h1>🚕 Apni Ride</h1>
+<p>Book Your Ride Easily</p>
 </header>
 
 <div class="container">
 
 <!-- HOME -->
 
-<div class="card" id="home">
+<div id="home" class="card">
 
-  <h2>Choose Mode</h2>
+<h2>Choose Your Role</h2>
 
-  <button onclick="showPassenger()">
-    👤 Passenger
-  </button>
+<button class="blue" onclick="showPassenger()">
+👤 Passenger
+</button>
 
-  <button class="orange" onclick="showDriver()">
-    👨‍✈️ Driver
-  </button>
+<button class="black" onclick="showDriver()">
+🚗 Driver
+</button>
 
 </div>
 
@@ -171,117 +163,84 @@ button:active{
 
 <div id="passenger" class="hidden">
 
-  <div class="card">
+<div class="card">
 
-    <h2>🚕 Book Ride</h2>
+<h2>👤 Book Ride</h2>
 
-    <input
-      id="passengerName"
-      placeholder="Passenger Name"
-    >
+<input id="passengerName"
+placeholder="Passenger Name">
 
-    <input
-      id="passengerPhone"
-      placeholder="Mobile Number"
-      type="tel"
-    >
+<input id="passengerPhone"
+placeholder="Mobile Number"
+type="tel">
 
-    <input
-      id="pickup"
-      placeholder="Pickup Location"
-    >
+<input id="pickup"
+placeholder="Pickup Location">
 
-    <input
-      id="drop"
-      placeholder="Drop Location"
-    >
+<input id="drop"
+placeholder="Drop Location">
 
-    <select id="vehicle">
-      <option value="bike">🏍️ Bike</option>
-      <option value="auto">🛺 Auto</option>
-      <option value="car">🚗 Car</option>
-    </select>
 
-    <button onclick="calculateRoute()">
-      🗺️ Calculate Route
-    </button>
+<h3>Choose Vehicle</h3>
 
-    <div id="routeInfo" class="status">
-      Distance: -
-    </div>
+<div class="vehicle">
 
-    <button class="green" onclick="bookRide()">
-      🚕 Book Ride
-    </button>
+<button id="bikeBtn"
+onclick="selectVehicle('Bike')">
+🏍️ Bike
+</button>
 
-    <button class="gray" onclick="goHome()">
-      ⬅️ Back
-    </button>
+<button id="autoBtn"
+onclick="selectVehicle('Auto')">
+🛺 Auto
+</button>
 
-  </div>
+<button id="carBtn"
+onclick="selectVehicle('Car')">
+🚗 Car
+</button>
 
-  <div class="card">
-    <div id="map"></div>
-  </div>
+</div>
 
-  <div class="card">
 
-    <h2>📋 My Ride</h2>
+<div id="fareBox"
+class="status">
+Vehicle select karo
+</div>
 
-    <div id="passengerStatus">
-      No active ride
-    </div>
 
-    <div id="ratingBox" class="hidden">
+<button class="blue"
+onclick="calculateRide()">
+📍 Calculate Fare
+</button>
 
-      <h3>⭐ Rate Your Ride</h3>
 
-      <div class="stars">
+<button class="green"
+onclick="bookRide()">
+🚕 Book Ride
+</button>
 
-        <span
-          class="star"
-          onclick="selectRating(1)"
-        >☆</span>
 
-        <span
-          class="star"
-          onclick="selectRating(2)"
-        >☆</span>
+<button class="black"
+onclick="goHome()">
+← Back
+</button>
 
-        <span
-          class="star"
-          onclick="selectRating(3)"
-        >☆</span>
+</div>
 
-        <span
-          class="star"
-          onclick="selectRating(4)"
-        >☆</span>
 
-        <span
-          class="star"
-          onclick="selectRating(5)"
-        >☆</span>
+<div class="card">
 
-      </div>
+<h2>🗺️ Map</h2>
 
-      <div
-        id="ratingText"
-        class="ratingText"
-      >
-        Rating select karo
-      </div>
+<div id="passengerMap"></div>
 
-      <button
-        class="green"
-        onclick="submitRating()"
-      >
-        ⭐ Submit Rating
-      </button>
+</div>
 
-    </div>
 
-  </div>
+<div id="passengerStatus"
+class="card hidden">
+</div>
 
 </div>
 
@@ -290,1164 +249,1007 @@ button:active{
 
 <div id="driver" class="hidden">
 
-  <div class="card">
+<div class="card">
 
-    <h2>👨‍✈️ Driver Dashboard</h2>
+<h2>🚗 Driver Dashboard</h2>
 
-    <div
-      id="driverStatus"
-      class="status"
-    >
-      🔴 Driver Offline
-    </div>
+<input id="driverName"
+value="Demo Driver"
+placeholder="Driver Name">
 
-    <button
-      class="green"
-      onclick="goOnline()"
-    >
-      🟢 Go Online
-    </button>
 
-    <button
-      class="red"
-      onclick="goOffline()"
-    >
-      🔴 Go Offline
-    </button>
+<button id="onlineBtn"
+class="green"
+onclick="toggleDriver()">
+🟢 Go Online
+</button>
 
-    <button
-      class="gray"
-      onclick="goHome()"
-    >
-      ⬅️ Back
-    </button>
 
-  </div>
+<button class="black"
+onclick="goHome()">
+← Back
+</button>
 
-  <div class="card">
 
-    <h3>📍 Driver Location</h3>
+<div id="driverStatus"
+class="status">
+🔴 Driver Offline
+</div>
 
-    <div id="driverMap"></div>
+</div>
 
-  </div>
 
-  <div class="card">
+<div class="card">
 
-    <h2>🚕 Ride Requests</h2>
+<h2>🗺️ Driver Location</h2>
 
-    <div id="rideRequests">
-      No ride requests
-    </div>
+<div id="driverMap"></div>
 
-  </div>
+</div>
+
+
+<div class="card">
+
+<h2>📋 Ride Requests</h2>
+
+<div id="rideRequests">
+No ride requests
+</div>
+
+</div>
 
 </div>
 
 </div>
 
 
-<!-- LEAFLET -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-<script
-src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
-</script>
-
-
-<!-- FIREBASE -->
 
 <script type="module">
 
-import {
-  initializeApp
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 
 import {
-  getDatabase,
-  ref,
-  push,
-  set,
-  update,
-  onValue
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+getDatabase,
+ref,
+push,
+set,
+onValue,
+update
+}
+from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 
 /* FIREBASE */
 
-const firebaseConfig = {
-  apiKey: "AIzaSyD6u_Xa4YdDwMT8zoFZrO1dn6Qurc6pmcg",
-  authDomain: "apni-ride-c23f3.firebaseapp.com",
-  databaseURL: "https://apni-ride-c23f3-default-rtdb.firebaseio.com",
-  projectId: "apni-ride-c23f3",
-  storageBucket: "apni-ride-c23f3.firebasestorage.app",
-  messagingSenderId: "537555369746",
-  appId: "1:537555369746:web:5f5226a0eb5c8d8b83fdcb"
+const firebaseConfig={
+
+apiKey:"AIzaSyD6u_XaY4dDwMT8zoFZrO1dn6Qurc6pmcg",
+
+authDomain:
+"apni-ride-c23f3.firebaseapp.com",
+
+databaseURL:
+"https://apni-ride-c23f3-default-rtdb.firebaseio.com",
+
+projectId:
+"apni-ride-c23f3",
+
+storageBucket:
+"apni-ride-c23f3.firebasestorage.app",
+
+messagingSenderId:
+"537555369746",
+
+appId:
+"1:537555369746:web:5f5226a0eb5c8d8b83fdcb"
+
 };
 
-const app = initializeApp(firebaseConfig);
 
-const db = getDatabase(app);
+const app=initializeApp(firebaseConfig);
+
+const db=getDatabase(app);
 
 
 /* VARIABLES */
 
-let map = null;
-let driverMap = null;
+let selectedVehicle="";
 
-let routeLine = null;
-let pickupMarker = null;
-let dropMarker = null;
-let passengerDriverMarker = null;
-let driverMarker = null;
+let distance=5;
 
-let pickupCoords = null;
-let dropCoords = null;
+let fare=0;
 
-let lastDistance = 0;
-let lastFare = 0;
+let currentRideId=null;
 
-let currentRideId = null;
-let currentRating = 0;
+let driverOnline=false;
 
-let locationWatch = null;
+let driverWatch=null;
+
+let passengerMap=null;
+
+let driverMap=null;
+
+let driverMarker=null;
 
 
 /* HOME */
 
-window.goHome = function(){
+window.showPassenger=function(){
 
-  document
-    .getElementById("home")
-    .classList.remove("hidden");
+document.getElementById("home")
+.classList.add("hidden");
 
-  document
-    .getElementById("passenger")
-    .classList.add("hidden");
+document.getElementById("driver")
+.classList.add("hidden");
 
-  document
-    .getElementById("driver")
-    .classList.add("hidden");
+document.getElementById("passenger")
+.classList.remove("hidden");
 
-};
-
-
-/* PASSENGER */
-
-window.showPassenger = function(){
-
-  document
-    .getElementById("home")
-    .classList.add("hidden");
-
-  document
-    .getElementById("driver")
-    .classList.add("hidden");
-
-  document
-    .getElementById("passenger")
-    .classList.remove("hidden");
-
-  setTimeout(function(){
-
-    createPassengerMap();
-
-    map.invalidateSize();
-
-  },300);
-
-  listenDriverLocation();
+setTimeout(initPassengerMap,300);
 
 };
 
 
-/* DRIVER */
+window.showDriver=function(){
 
-window.showDriver = function(){
+document.getElementById("home")
+.classList.add("hidden");
 
-  document
-    .getElementById("home")
-    .classList.add("hidden");
+document.getElementById("passenger")
+.classList.add("hidden");
 
-  document
-    .getElementById("passenger")
-    .classList.add("hidden");
+document.getElementById("driver")
+.classList.remove("hidden");
 
-  document
-    .getElementById("driver")
-    .classList.remove("hidden");
+setTimeout(initDriverMap,300);
 
-  setTimeout(function(){
-
-    createDriverMap();
-
-    driverMap.invalidateSize();
-
-  },300);
-
-  listenRides();
+listenRides();
 
 };
 
 
-/* PASSENGER MAP */
+window.goHome=function(){
 
-function createPassengerMap(){
+document.getElementById("home")
+.classList.remove("hidden");
 
-  if(map) return;
+document.getElementById("passenger")
+.classList.add("hidden");
 
-  map = L.map("map").setView(
-    [20.4283,72.8397],
-    13
-  );
+document.getElementById("driver")
+.classList.add("hidden");
 
-  L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-      attribution:"© OpenStreetMap"
-    }
-  ).addTo(map);
-
-}
+};
 
 
-/* DRIVER MAP */
+/* VEHICLE */
 
-function createDriverMap(){
+window.selectVehicle=function(vehicle){
 
-  if(driverMap) return;
+selectedVehicle=vehicle;
 
-  driverMap = L.map("driverMap").setView(
-    [20.4283,72.8397],
-    13
-  );
+document
+.getElementById("bikeBtn")
+.classList.remove("active");
 
-  L.tileLayer(
-    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
-    {
-      attribution:"© OpenStreetMap"
-    }
-  ).addTo(driverMap);
+document
+.getElementById("autoBtn")
+.classList.remove("active");
 
-}
+document
+.getElementById("carBtn")
+.classList.remove("active");
 
 
-/* GEOCODE */
+if(vehicle==="Bike"){
 
-async function getLocation(address){
-
-  const url =
-    "https://nominatim.openstreetmap.org/search" +
-    "?format=json&limit=1&q=" +
-    encodeURIComponent(address);
-
-  const response =
-    await fetch(url);
-
-  const data =
-    await response.json();
-
-  if(!data.length){
-
-    throw new Error(
-      "Location not found"
-    );
-
-  }
-
-  return [
-    Number(data[0].lat),
-    Number(data[0].lon)
-  ];
+document
+.getElementById("bikeBtn")
+.classList.add("active");
 
 }
 
+if(vehicle==="Auto"){
 
-/* ROUTE */
+document
+.getElementById("autoBtn")
+.classList.add("active");
 
-window.calculateRoute = async function(){
+}
 
-  const pickup =
-    document
-      .getElementById("pickup")
-      .value
-      .trim();
+if(vehicle==="Car"){
 
-  const drop =
-    document
-      .getElementById("drop")
-      .value
-      .trim();
+document
+.getElementById("carBtn")
+.classList.add("active");
 
-  if(!pickup || !drop){
+}
 
-    alert(
-      "Pickup aur Drop location bharna hai."
-    );
-
-    return;
-
-  }
-
-  try{
-
-    document
-      .getElementById("routeInfo")
-      .innerHTML =
-      "⏳ Route calculate ho raha hai...";
-
-    pickupCoords =
-      await getLocation(pickup);
-
-    dropCoords =
-      await getLocation(drop);
-
-    const url =
-      "https://router.project-osrm.org/route/v1/driving/" +
-      pickupCoords[1] + "," +
-      pickupCoords[0] + ";" +
-      dropCoords[1] + "," +
-      dropCoords[0] +
-      "?overview=full&geometries=geojson";
-
-    const response =
-      await fetch(url);
-
-    const data =
-      await response.json();
-
-    if(
-      !data.routes ||
-      !data.routes.length
-    ){
-
-      alert("Route nahi mila.");
-
-      return;
-
-    }
-
-    const route =
-      data.routes[0];
-
-    lastDistance =
-      route.distance / 1000;
-
-    const vehicle =
-      document
-        .getElementById("vehicle")
-        .value;
-
-    lastFare =
-      calculateFare(
-        vehicle,
-        lastDistance
-      );
-
-    document
-      .getElementById("routeInfo")
-      .innerHTML =
-      "📍 Distance: <b>" +
-      lastDistance.toFixed(2) +
-      " km</b><br>" +
-      "💰 Fare: <b>₹" +
-      lastFare +
-      "</b>";
-
-
-    if(routeLine)
-      map.removeLayer(routeLine);
-
-    if(pickupMarker)
-      map.removeLayer(pickupMarker);
-
-    if(dropMarker)
-      map.removeLayer(dropMarker);
-
-
-    routeLine =
-      L.geoJSON(
-        route.geometry
-      ).addTo(map);
-
-
-    pickupMarker =
-      L.marker(pickupCoords)
-      .addTo(map)
-      .bindPopup("📍 Pickup");
-
-
-    dropMarker =
-      L.marker(dropCoords)
-      .addTo(map)
-      .bindPopup("🏁 Drop");
-
-
-    map.fitBounds(
-      routeLine.getBounds()
-    );
-
-  }
-  catch(error){
-
-    console.error(error);
-
-    alert(
-      "Location nahi mili. Location ka naam dobara check karo."
-    );
-
-  }
+calculateFare();
 
 };
 
 
 /* FARE */
 
-function calculateFare(
-  vehicle,
-  distance
-){
+function calculateFare(){
 
-  let base;
-  let perKm;
+if(!selectedVehicle){
 
-  if(vehicle === "bike"){
+document.getElementById("fareBox")
+.innerHTML="Vehicle select karo";
 
-    base = 30;
-    perKm = 10;
+return;
 
-  }
-  else if(vehicle === "auto"){
+}
 
-    base = 40;
-    perKm = 14;
+let base=0;
 
-  }
-  else{
+let perKm=0;
 
-    base = 60;
-    perKm = 18;
 
-  }
+if(selectedVehicle==="Bike"){
 
-  return Math.round(
-    base + distance * perKm
-  );
+base=30;
+
+perKm=10;
 
 }
 
 
+if(selectedVehicle==="Auto"){
+
+base=40;
+
+perKm=14;
+
+}
+
+
+if(selectedVehicle==="Car"){
+
+base=60;
+
+perKm=18;
+
+}
+
+
+fare=Math.round(
+base+(distance*perKm)
+);
+
+
+document.getElementById("fareBox")
+.innerHTML=
+
+"Distance: "+distance+" km<br>"+
+"<b>Fare: ₹"+fare+"</b>";
+
+}
+
+
+/* CALCULATE */
+
+window.calculateRide=function(){
+
+let pickup=
+document.getElementById("pickup")
+.value.trim();
+
+let drop=
+document.getElementById("drop")
+.value.trim();
+
+
+if(!pickup || !drop){
+
+alert("Pickup aur Drop likho");
+
+return;
+
+}
+
+
+if(!selectedVehicle){
+
+alert("Vehicle select karo");
+
+return;
+
+}
+
+
+/* DEMO DISTANCE */
+
+distance=
+Math.floor(Math.random()*8)+3;
+
+calculateFare();
+
+};
+
+
 /* BOOK */
 
-window.bookRide = async function(){
+window.bookRide=async function(){
 
-  const name =
-    document
-      .getElementById("passengerName")
-      .value
-      .trim();
+let name=
+document.getElementById("passengerName")
+.value.trim();
 
-  const phone =
-    document
-      .getElementById("passengerPhone")
-      .value
-      .trim();
+let phone=
+document.getElementById("passengerPhone")
+.value.trim();
 
-  const pickup =
-    document
-      .getElementById("pickup")
-      .value
-      .trim();
+let pickup=
+document.getElementById("pickup")
+.value.trim();
 
-  const drop =
-    document
-      .getElementById("drop")
-      .value
-      .trim();
-
-  const vehicle =
-    document
-      .getElementById("vehicle")
-      .value;
+let drop=
+document.getElementById("drop")
+.value.trim();
 
 
-  if(
-    !name ||
-    !phone ||
-    !pickup ||
-    !drop
-  ){
+if(!name ||
+!phone ||
+!pickup ||
+!drop){
 
-    alert(
-      "Sabhi details bharna zaroori hai."
-    );
+alert(
+"Name, Mobile, Pickup aur Drop fill karo"
+);
 
-    return;
+return;
 
-  }
+}
 
 
-  if(
-    !pickupCoords ||
-    !dropCoords
-  ){
+if(!selectedVehicle){
 
-    alert(
-      "Pehle Calculate Route dabao."
-    );
+alert("Vehicle select karo");
 
-    return;
+return;
 
-  }
+}
 
 
-  try{
-
-    const rideRef =
-      push(ref(db,"rides"));
-
-    currentRideId =
-      rideRef.key;
+calculateFare();
 
 
-    const ride = {
+try{
 
-      id:currentRideId,
-
-      passengerName:name,
-
-      passengerPhone:phone,
-
-      pickup:pickup,
-
-      drop:drop,
-
-      pickupLat:pickupCoords[0],
-
-      pickupLng:pickupCoords[1],
-
-      dropLat:dropCoords[0],
-
-      dropLng:dropCoords[1],
-
-      vehicle:vehicle,
-
-      distanceKm:lastDistance,
-
-      fare:lastFare,
-
-      status:"requested",
-
-      driverName:"",
-
-      driverId:"",
-
-      rating:0,
-
-      createdAt:Date.now()
-
-    };
+const rideRef=
+push(ref(db,"rides"));
 
 
-    await set(
-      rideRef,
-      ride
-    );
+currentRideId=rideRef.key;
 
 
-    showPassengerStatus(ride);
+await set(
+rideRef,
+{
+
+passengerName:name,
+
+passengerPhone:phone,
+
+pickup:pickup,
+
+drop:drop,
+
+vehicle:selectedVehicle,
+
+distanceKm:distance,
+
+fare:fare,
+
+status:"requested",
+
+driverName:"",
+
+createdAt:Date.now()
+
+}
+);
 
 
-    alert(
-      "🚕 Ride request sent!"
-    );
+document
+.getElementById("passengerStatus")
+.classList.remove("hidden");
 
-  }
-  catch(error){
 
-    console.error(error);
+document
+.getElementById("passengerStatus")
+.innerHTML=
 
-    alert(
-      "Ride booking error: " +
-      error.message
-    );
+"<h3>🚕 Ride Booked</h3>"+
+"<p>Ride ID: <b>"+
+currentRideId+
+"</b></p>"+
+"<p>Status: Searching for driver...</p>";
 
-  }
+
+listenPassengerRide();
+
+
+alert("Ride Booked Successfully 🚕");
+
+
+}catch(error){
+
+console.error(error);
+
+alert(
+"Firebase error. Database rules check karo."
+);
+
+}
 
 };
 
 
 /* PASSENGER STATUS */
 
-function showPassengerStatus(ride){
+function listenPassengerRide(){
 
-  const box =
-    document
-      .getElementById("passengerStatus");
+if(!currentRideId)return;
 
 
-  if(ride.status === "requested"){
+onValue(
+ref(db,"rides/"+currentRideId),
+(snapshot)=>{
 
-    box.innerHTML =
-      "<div class='status'>" +
-      "🕐 Driver ka wait ho raha hai..." +
-      "<br>Fare: ₹" +
-      ride.fare +
-      "</div>";
+const ride=snapshot.val();
 
-  }
+if(!ride)return;
 
 
-  else if(ride.status === "accepted"){
+let html=
 
-    box.innerHTML =
-      "<div class='status'>" +
-      "✅ Driver ne ride accept kar li." +
-      "<br>Driver: " +
-      (ride.driverName || "Demo Driver") +
-      "</div>";
+"<h3>🚕 Ride Status</h3>"+
 
-  }
+"<p>Status: <b>"+
+ride.status+
+"</b></p>"+
 
+"<p>Vehicle: "+
+ride.vehicle+
+"</p>"+
 
-  else if(ride.status === "started"){
-
-    box.innerHTML =
-      "<div class='status'>" +
-      "▶️ Ride Started" +
-      "<br>Driver: " +
-      (ride.driverName || "Demo Driver") +
-      "</div>";
-
-  }
+"<p>Fare: ₹"+
+ride.fare+
+"</p>";
 
 
-  else if(ride.status === "completed"){
+if(ride.driverName){
 
-    box.innerHTML =
-      "<div class='status'>" +
-      "🏁 Ride Completed" +
-      "<br>Fare: ₹" +
-      ride.fare +
-      "</div>";
-
-    document
-      .getElementById("ratingBox")
-      .classList.remove("hidden");
-
-  }
-
-
-  else if(ride.status === "rejected"){
-
-    box.innerHTML =
-      "<div class='status'>" +
-      "❌ Ride rejected." +
-      "</div>";
-
-  }
+html+=
+"<p>Driver: <b>"+
+ride.driverName+
+"</b></p>";
 
 }
 
 
-/* LISTEN RIDES */
+if(ride.status==="completed"){
 
-function listenRides(){
+html+=`
 
-  onValue(
-    ref(db,"rides"),
-    function(snapshot){
+<h3>⭐ Rate Ride</h3>
 
-      const data =
-        snapshot.val();
+<button onclick="rateRide(1)">
+⭐
+</button>
 
-      const box =
-        document
-          .getElementById("rideRequests");
+<button onclick="rateRide(2)">
+⭐⭐
+</button>
 
-      box.innerHTML = "";
+<button onclick="rateRide(3)">
+⭐⭐⭐
+</button>
 
+<button onclick="rateRide(4)">
+⭐⭐⭐⭐
+</button>
 
-      if(!data){
+<button onclick="rateRide(5)">
+⭐⭐⭐⭐⭐
+</button>
 
-        box.innerHTML =
-          "No ride requests";
-
-        return;
-
-      }
-
-
-      Object.values(data)
-      .forEach(function(ride){
-
-        if(
-          ride.status !== "completed" &&
-          ride.status !== "rejected"
-        ){
-
-          const div =
-            document.createElement("div");
-
-          div.className = "ride";
-
-
-          let buttons = "";
-
-
-          if(
-            ride.status === "requested"
-          ){
-
-            buttons =
-
-              "<button class='green' " +
-              "onclick=\"acceptRide('" +
-              ride.id +
-              "')\">" +
-              "✅ Accept" +
-              "</button>" +
-
-              "<button class='red' " +
-              "onclick=\"rejectRide('" +
-              ride.id +
-              "')\">" +
-              "❌ Reject" +
-              "</button>";
-
-          }
-
-
-          if(
-            ride.status === "accepted"
-          ){
-
-            buttons =
-
-              "<button class='orange' " +
-              "onclick=\"startRide('" +
-              ride.id +
-              "')\">" +
-              "▶️ Start Ride" +
-              "</button>";
-
-          }
-
-
-          if(
-            ride.status === "started"
-          ){
-
-            buttons =
-
-              "<button class='green' " +
-              "onclick=\"completeRide('" +
-              ride.id +
-              "')\">" +
-              "🏁 Complete Ride" +
-              "</button>";
-
-          }
-
-
-          div.innerHTML =
-
-            "<b>👤 " +
-            escapeHTML(
-              ride.passengerName
-            ) +
-            "</b>" +
-
-            "<p>📍 Pickup: " +
-            escapeHTML(
-              ride.pickup
-            ) +
-            "</p>" +
-
-            "<p>🏁 Drop: " +
-            escapeHTML(
-              ride.drop
-            ) +
-            "</p>" +
-
-            "<p>🚕 Vehicle: " +
-            ride.vehicle +
-            "</p>" +
-
-            "<p>💰 Fare: ₹" +
-            ride.fare +
-            "</p>" +
-
-            "<p>📌 Status: " +
-            ride.status +
-            "</p>" +
-
-            buttons;
-
-
-          box.appendChild(div);
-
-        }
-
-      });
-
-    }
-  );
+`;
 
 }
 
 
-/* ACCEPT */
+document
+.getElementById("passengerStatus")
+.innerHTML=html;
 
-window.acceptRide = async function(id){
+}
 
-  await update(
-    ref(db,"rides/" + id),
-    {
-      status:"accepted",
-      driverName:"Demo Driver",
-      driverId:"demoDriver",
-      acceptedAt:Date.now()
-    }
-  );
+);
 
-  alert(
-    "✅ Ride Accepted"
-  );
-
-};
-
-
-/* REJECT */
-
-window.rejectRide = async function(id){
-
-  await update(
-    ref(db,"rides/" + id),
-    {
-      status:"rejected",
-      rejectedAt:Date.now()
-    }
-  );
-
-};
-
-
-/* START */
-
-window.startRide = async function(id){
-
-  await update(
-    ref(db,"rides/" + id),
-    {
-      status:"started",
-      startedAt:Date.now()
-    }
-  );
-
-  alert(
-    "▶️ Ride Started"
-  );
-
-};
-
-
-/* COMPLETE */
-
-window.completeRide = async function(id){
-
-  await update(
-    ref(db,"rides/" + id),
-    {
-      status:"completed",
-      completedAt:Date.now()
-    }
-  );
-
-  alert(
-    "🏁 Ride Completed"
-  );
-
-};
+}
 
 
 /* RATING */
 
-window.selectRating = function(rating){
+window.rateRide=async function(rating){
 
-  currentRating =
-    rating;
-
-  const stars =
-    document.querySelectorAll(
-      ".star"
-    );
+if(!currentRideId)return;
 
 
-  stars.forEach(
-    function(star,index){
+await update(
 
-      star.innerText =
-        index < rating
-        ? "★"
-        : "☆";
+ref(
+db,
+"rides/"+currentRideId
+),
 
-    }
-  );
+{
+rating:rating
+}
 
-
-  document
-    .getElementById("ratingText")
-    .innerText =
-    rating + " / 5 ⭐";
-
-};
+);
 
 
-window.submitRating = async function(){
-
-  if(!currentRating){
-
-    alert(
-      "Pehle star select karo."
-    );
-
-    return;
-
-  }
-
-
-  if(!currentRideId){
-
-    alert(
-      "Ride nahi mili."
-    );
-
-    return;
-
-  }
-
-
-  await update(
-    ref(
-      db,
-      "rides/" + currentRideId
-    ),
-    {
-      rating:currentRating,
-      ratedAt:Date.now()
-    }
-  );
-
-
-  document
-    .getElementById("ratingText")
-    .innerText =
-    "✅ Rating submitted!";
-
+alert(
+"Rating saved ⭐"
+);
 
 };
 
 
 /* DRIVER ONLINE */
 
-window.goOnline = function(){
+window.toggleDriver=function(){
 
-  if(!navigator.geolocation){
-
-    alert(
-      "Location supported nahi hai."
-    );
-
-    return;
-
-  }
+driverOnline=!driverOnline;
 
 
-  document
-    .getElementById("driverStatus")
-    .innerText =
-    "🟢 Driver Online";
+let button=
+document.getElementById("onlineBtn");
+
+let status=
+document.getElementById("driverStatus");
 
 
-  locationWatch =
-    navigator.geolocation.watchPosition(
+if(driverOnline){
 
-      async function(position){
+button.innerHTML="🔴 Go Offline";
 
-        const lat =
-          position.coords.latitude;
+button.className="red";
 
-        const lng =
-          position.coords.longitude;
+status.innerHTML=
+"🟢 Driver Online";
 
+startDriverLocation();
 
-        await set(
-          ref(
-            db,
-            "drivers/demoDriver"
-          ),
-          {
-            name:"Demo Driver",
-            lat:lat,
-            lng:lng,
-            online:true,
-            updatedAt:Date.now()
-          }
-        );
+}else{
 
+button.innerHTML="🟢 Go Online";
 
-        if(driverMap){
+button.className="green";
 
-          if(driverMarker){
+status.innerHTML=
+"🔴 Driver Offline";
 
-            driverMarker.setLatLng(
-              [lat,lng]
-            );
+stopDriverLocation();
 
-          }
-          else{
-
-            driverMarker =
-              L.marker(
-                [lat,lng]
-              )
-              .addTo(driverMap)
-              .bindPopup(
-                "🚕 Driver"
-              );
-
-          }
-
-
-          driverMap.setView(
-            [lat,lng],
-            16
-          );
-
-        }
-
-      },
-
-
-      function(error){
-
-        console.log(error);
-
-        alert(
-          "Location permission allow karo."
-        );
-
-      },
-
-
-      {
-        enableHighAccuracy:true,
-        maximumAge:5000,
-        timeout:10000
-      }
-
-    );
+}
 
 };
 
 
-/* DRIVER OFFLINE */
+/* DRIVER LOCATION */
 
-window.goOffline = async function(){
+function startDriverLocation(){
 
-  if(locationWatch !== null){
+if(!navigator.geolocation){
 
-    navigator
-      .geolocation
-      .clearWatch(
-        locationWatch
-      );
+alert(
+"Location supported nahi hai"
+);
 
-    locationWatch = null;
+return;
 
-  }
+}
 
 
-  await update(
-    ref(
-      db,
-      "drivers/demoDriver"
-    ),
-    {
-      online:false,
-      updatedAt:Date.now()
-    }
-  );
+driverWatch=
+navigator.geolocation.watchPosition(
+
+async(position)=>{
+
+let lat=
+position.coords.latitude;
+
+let lng=
+position.coords.longitude;
 
 
-  document
-    .getElementById("driverStatus")
-    .innerText =
-    "🔴 Driver Offline";
+await set(
+
+ref(
+db,
+"drivers/demoDriver"
+),
+
+{
+
+name:
+document
+.getElementById("driverName")
+.value ||
+"Demo Driver",
+
+lat:lat,
+
+lng:lng,
+
+online:true,
+
+updatedAt:Date.now()
+
+}
+
+);
+
+
+if(driverMap){
+
+if(driverMarker){
+
+driverMarker
+.setLatLng([lat,lng]);
+
+}else{
+
+driverMarker=
+L.marker([lat,lng])
+.addTo(driverMap)
+.bindPopup("🚗 Driver");
+
+}
+
+driverMap
+.setView([lat,lng],15);
+
+}
+
+},
+
+()=>{
+
+alert(
+"Location permission allow karo"
+);
+
+},
+
+{
+
+enableHighAccuracy:true,
+
+maximumAge:5000,
+
+timeout:10000
+
+}
+
+);
+
+}
+
+
+/* STOP LOCATION */
+
+async function stopDriverLocation(){
+
+if(driverWatch!==null){
+
+navigator.geolocation
+.clearWatch(driverWatch);
+
+driverWatch=null;
+
+}
+
+
+await update(
+
+ref(
+db,
+"drivers/demoDriver"
+),
+
+{
+online:false
+}
+
+);
+
+}
+
+
+/* DRIVER REQUESTS */
+
+function listenRides(){
+
+onValue(
+
+ref(db,"rides"),
+
+(snapshot)=>{
+
+let data=snapshot.val();
+
+let box=
+document.getElementById(
+"rideRequests"
+);
+
+
+box.innerHTML="";
+
+
+if(!data){
+
+box.innerHTML=
+"No ride requests";
+
+return;
+
+}
+
+
+let found=false;
+
+
+Object.keys(data)
+.forEach(id=>{
+
+let ride=data[id];
+
+
+if(ride.status!=="requested")
+return;
+
+
+found=true;
+
+
+let div=
+document.createElement("div");
+
+div.className="ride";
+
+
+div.innerHTML=
+
+"<b>🚕 New Ride</b>"+
+
+"<p>Passenger: "+
+ride.passengerName+
+"</p>"+
+
+"<p>📍 "+
+ride.pickup+
+"</p>"+
+
+"<p>🏁 "+
+ride.drop+
+"</p>"+
+
+"<p>🚗 "+
+ride.vehicle+
+"</p>"+
+
+"<p>💰 ₹"+
+ride.fare+
+"</p>"+
+
+"<button class='green' "+
+"onclick=\"acceptRide('"+
+id+
+"')\">"+
+"✅ Accept"+
+"</button>"+
+
+"<button class='red' "+
+"onclick=\"rejectRide('"+
+id+
+"')\">"+
+"❌ Reject"+
+"</button>";
+
+
+box.appendChild(div);
+
+});
+
+
+if(!found){
+
+box.innerHTML=
+"No new ride requests";
+
+}
+
+}
+
+);
+
+}
+
+
+/* ACCEPT */
+
+window.acceptRide=
+async function(id){
+
+let driverName=
+document
+.getElementById("driverName")
+.value ||
+"Demo Driver";
+
+
+await update(
+
+ref(
+db,
+"rides/"+id
+),
+
+{
+
+status:"accepted",
+
+driverName:driverName
+
+}
+
+);
+
+
+alert(
+"Ride Accepted 🚕"
+);
 
 };
 
 
-/* DRIVER LOCATION TO PASSENGER */
+/* REJECT */
 
-function listenDriverLocation(){
+window.rejectRide=
+async function(id){
 
-  onValue(
-    ref(
-      db,
-      "drivers/demoDriver"
-    ),
-    function(snapshot){
+await update(
 
-      const driver =
-        snapshot.val();
+ref(
+db,
+"rides/"+id
+),
 
-      if(!driver)
-        return;
+{
+status:"rejected"
+}
 
-
-      if(
-        !driver.online
-      ){
-
-        if(
-          passengerDriverMarker
-        ){
-
-          map.removeLayer(
-            passengerDriverMarker
-          );
-
-          passengerDriverMarker =
-            null;
-
-        }
-
-        return;
-
-      }
+);
 
 
-      const position =
-        [
-          driver.lat,
-          driver.lng
-        ];
+alert(
+"Ride Rejected"
+);
+
+};
 
 
-      if(
-        passengerDriverMarker
-      ){
+/* DRIVER MAP */
 
-        passengerDriverMarker
-          .setLatLng(
-            position
-          );
+function initDriverMap(){
 
-      }
-      else{
+if(driverMap)return;
 
-        passengerDriverMarker =
-          L.marker(
-            position
-   
+
+driverMap=
+L.map("driverMap")
+.setView(
+[20.42,72.83],
+12
+);
+
+
+L.tileLayer(
+
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+{
+
+attribution:
+"© OpenStreetMap"
+
+}
+
+).addTo(driverMap);
+
+}
+
+
+/* PASSENGER MAP */
+
+function initPassengerMap(){
+
+if(passengerMap)return;
+
+
+passengerMap=
+L.map("passengerMap")
+.setView(
+[20.42,72.83],
+12
+);
+
+
+L.tileLayer(
+
+"https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+
+{
+
+attribution:
+"© OpenStreetMap"
+
+}
+
+).addTo(passengerMap);
+
+
+if(navigator.geolocation){
+
+navigator.geolocation.getCurrentPosition(
+
+(position)=>{
+
+let lat=
+position.coords.latitude;
+
+let lng=
+position.coords.longitude;
+
+
+L.marker([lat,lng])
+
+.addTo(passengerMap)
+
+.bindPopup(
+"📍 Your Location"
+)
+
+.openPopup();
+
+
+passengerMap
+.setView(
+[lat,lng],
+15
+);
+
+}
+
+);
+
+}
+
+}
+
+</script>
+
+</body>
+</html>
