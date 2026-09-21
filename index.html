@@ -63,6 +63,11 @@ button{
   color:white;
 }
 
+.red{
+  background:#dc2626;
+  color:white;
+}
+
 input{
   width:100%;
   padding:13px;
@@ -82,6 +87,13 @@ input{
   border-radius:12px;
   margin-top:10px;
 }
+
+.ride{
+  border:1px solid #ddd;
+  padding:15px;
+  margin-top:10px;
+  border-radius:10px;
+}
 </style>
 </head>
 
@@ -92,9 +104,7 @@ input{
 <p>Your Ride, Your Way</p>
 </header>
 
-
 <div class="container">
-
 
 <!-- HOME -->
 
@@ -124,6 +134,11 @@ input{
 <input
 id="name"
 placeholder="Your Name">
+
+<input
+id="phone"
+placeholder="Mobile Number"
+type="tel">
 
 <input
 id="pickup"
@@ -199,8 +214,10 @@ class="card hidden">
 id="driverName"
 placeholder="Driver Name">
 
-<button class="green"
-onclick="goOnline()">
+<button
+id="onlineButton"
+class="green"
+onclick="toggleOnline()">
 🟢 Go Online
 </button>
 
@@ -215,8 +232,18 @@ onclick="goHome()">
 
 </div>
 
+
+<div class="card">
+
+<h2>📋 Ride Requests</h2>
+
+<div id="rideRequests">
+Driver ko online karo.
 </div>
 
+</div>
+
+</div>
 
 </div>
 
@@ -226,16 +253,75 @@ src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
 </script>
 
 
-<script>
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+push,
+set,
+onValue,
+update
+}
+from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+
+
+/* FIREBASE */
+
+const firebaseConfig = {
+
+apiKey:
+"AIzaSyD6u_Xa4YdDwMT8zoFZrO1dn6Qurc6pmcg",
+
+authDomain:
+"apni-ride-c23f3.firebaseapp.com",
+
+databaseURL:
+"https://apni-ride-c23f3-default-rtdb.firebaseio.com",
+
+projectId:
+"apni-ride-c23f3",
+
+storageBucket:
+"apni-ride-c23f3.firebasestorage.app",
+
+messagingSenderId:
+"537555369746",
+
+appId:
+"1:537555369746:web:5f5226a0eb5c8d8b83fdcb"
+
+};
+
+
+const app =
+initializeApp(firebaseConfig);
+
+const db =
+getDatabase(app);
+
+
+/* VARIABLES */
 
 let vehicle="";
 
-let map;
+let map=null;
+
+let distance=5;
+
+let fare=0;
+
+let currentRideId=null;
+
+let driverOnline=false;
 
 
 /* PASSENGER */
 
-function showPassenger(){
+window.showPassenger=function(){
 
 document
 .getElementById("home")
@@ -249,12 +335,15 @@ document
 .getElementById("passenger")
 .classList.remove("hidden");
 
+
 setTimeout(function(){
 
 if(map) return;
 
+
 map=L.map("map")
 .setView([20.42,72.83],12);
+
 
 L.tileLayer(
 "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -265,12 +354,12 @@ attribution:"© OpenStreetMap"
 
 },300);
 
-}
+};
 
 
 /* DRIVER */
 
-function showDriver(){
+window.showDriver=function(){
 
 document
 .getElementById("home")
@@ -284,12 +373,14 @@ document
 .getElementById("driver")
 .classList.remove("hidden");
 
-}
+listenRides();
+
+};
 
 
 /* HOME */
 
-function goHome(){
+window.goHome=function(){
 
 document
 .getElementById("home")
@@ -303,12 +394,12 @@ document
 .getElementById("driver")
 .classList.add("hidden");
 
-}
+};
 
 
 /* VEHICLE */
 
-function chooseVehicle(type){
+window.chooseVehicle=function(type){
 
 vehicle=type;
 
@@ -317,27 +408,30 @@ document
 .innerHTML=
 "Vehicle: <b>"+type+"</b>";
 
-}
+};
 
 
 /* FARE */
 
-function calculateFare(){
+window.calculateFare=function(){
 
 let name=
-document.getElementById("name").value;
+document.getElementById("name").value.trim();
+
+let phone=
+document.getElementById("phone").value.trim();
 
 let pickup=
-document.getElementById("pickup").value;
+document.getElementById("pickup").value.trim();
 
 let drop=
-document.getElementById("drop").value;
+document.getElementById("drop").value.trim();
 
 
-if(!name || !pickup || !drop){
+if(!name || !phone || !pickup || !drop){
 
 alert(
-"Name, Pickup aur Drop fill karo"
+"Name, Mobile, Pickup aur Drop fill karo"
 );
 
 return;
@@ -347,29 +441,33 @@ return;
 
 if(!vehicle){
 
-alert(
-"Vehicle select karo"
-);
+alert("Vehicle select karo");
 
 return;
 
 }
 
 
-let fare=0;
+/* Demo distance */
+
+distance=
+Math.floor(Math.random()*8)+3;
 
 
 if(vehicle==="Bike"){
-fare=50;
+fare=30+(distance*10);
 }
 
 if(vehicle==="Auto"){
-fare=80;
+fare=40+(distance*14);
 }
 
 if(vehicle==="Car"){
-fare=120;
+fare=60+(distance*18);
 }
+
+
+fare=Math.round(fare);
 
 
 document
@@ -391,6 +489,9 @@ document
 
 "<p>Vehicle: <b>"+vehicle+"</b></p>"+
 
+"<p>Distance: <b>"+distance+
+" km</b></p>"+
+
 "<h2>Estimated Fare: ₹"+
 fare+
 "</h2>"+
@@ -400,37 +501,346 @@ fare+
 "🚕 Book Ride"+
 "</button>";
 
+};
+
+
+/* BOOK RIDE */
+
+window.bookRide=async function(){
+
+let name=
+document.getElementById("name").value.trim();
+
+let phone=
+document.getElementById("phone").value.trim();
+
+let pickup=
+document.getElementById("pickup").value.trim();
+
+let drop=
+document.getElementById("drop").value.trim();
+
+
+if(!name || !phone || !pickup || !drop){
+
+alert("Sab details fill karo");
+
+return;
+
 }
 
 
-/* BOOK */
+if(!vehicle){
 
-function bookRide(){
+alert("Vehicle select karo");
+
+return;
+
+}
+
+
+try{
+
+const rideRef=
+push(ref(db,"rides"));
+
+
+currentRideId=
+rideRef.key;
+
+
+await set(
+rideRef,
+{
+
+passengerName:name,
+
+passengerPhone:phone,
+
+pickup:pickup,
+
+drop:drop,
+
+vehicle:vehicle,
+
+distanceKm:distance,
+
+fare:fare,
+
+status:"requested",
+
+driverName:"",
+
+createdAt:Date.now()
+
+}
+);
+
 
 document
 .getElementById("result")
-.innerHTML+=
+.innerHTML=
 
-"<h3>✅ Ride Request Sent!</h3>"+
-"<p>Driver search ho raha hai...</p>";
+"<h2>✅ Ride Booked</h2>"+
+
+"<p>Ride ID:</p>"+
+
+"<b>"+currentRideId+"</b>"+
+
+"<p>🚕 Driver search ho raha hai...</p>";
+
+
+listenMyRide();
+
+
+}catch(error){
+
+console.error(error);
+
+alert(
+"Firebase error: "+
+error.message
+);
+
+}
+
+};
+
+
+/* PASSENGER STATUS */
+
+function listenMyRide(){
+
+if(!currentRideId) return;
+
+
+onValue(
+
+ref(
+db,
+"rides/"+currentRideId
+),
+
+(snapshot)=>{
+
+const ride=snapshot.val();
+
+if(!ride) return;
+
+
+document
+.getElementById("result")
+.innerHTML=
+
+"<h2>🚕 Ride Status</h2>"+
+
+"<p>Status: <b>"+
+ride.status+
+"</b></p>"+
+
+"<p>Vehicle: "+
+ride.vehicle+
+"</p>"+
+
+"<p>Fare: ₹"+
+ride.fare+
+"</p>"+
+
+(
+ride.driverName
+?
+"<p>Driver: <b>"+
+ride.driverName+
+"</b></p>"
+:
+""
+);
+
+}
+
+);
 
 }
 
 
-/* DRIVER */
+/* DRIVER ONLINE */
 
-function goOnline(){
+window.toggleOnline=function(){
 
-let name=
+driverOnline=
+!driverOnline;
+
+
+const button=
+document.getElementById("onlineButton");
+
+const status=
+document.getElementById("driverStatus");
+
+
+if(driverOnline){
+
+button.innerHTML=
+"🔴 Go Offline";
+
+button.className="red";
+
+status.innerHTML=
+"🟢 Driver Online";
+
+
+listenRides();
+
+
+}else{
+
+button.innerHTML=
+"🟢 Go Online";
+
+button.className="green";
+
+status.innerHTML=
+"🔴 Driver Offline";
+
+}
+
+};
+
+
+/* DRIVER RIDE REQUESTS */
+
+function listenRides(){
+
+onValue(
+
+ref(db,"rides"),
+
+(snapshot)=>{
+
+const data=snapshot.val();
+
+const box=
+document.getElementById("rideRequests");
+
+
+if(!driverOnline){
+
+box.innerHTML=
+"Driver Offline";
+
+return;
+
+}
+
+
+box.innerHTML="";
+
+
+if(!data){
+
+box.innerHTML=
+"No ride requests";
+
+return;
+
+}
+
+
+let found=false;
+
+
+Object.keys(data)
+.forEach(id=>{
+
+const ride=data[id];
+
+
+if(ride.status!=="requested")
+return;
+
+
+found=true;
+
+
+const div=
+document.createElement("div");
+
+div.className="ride";
+
+
+div.innerHTML=
+
+"<h3>🚕 New Ride</h3>"+
+
+"<p>Passenger: <b>"+
+ride.passengerName+
+"</b></p>"+
+
+"<p>📍 Pickup: "+
+ride.pickup+
+"</p>"+
+
+"<p>🏁 Drop: "+
+ride.drop+
+"</p>"+
+
+"<p>🚗 Vehicle: "+
+ride.vehicle+
+"</p>"+
+
+"<p>💰 Fare: ₹"+
+ride.fare+
+"</p>"+
+
+"<button class='green' "+
+"onclick=\"acceptRide('"+
+id+
+"')\">"+
+"✅ Accept Ride"+
+"</button>"+
+
+"<button class='red' "+
+"onclick=\"rejectRide('"+
+id+
+"')\">"+
+"❌ Reject"+
+"</button>";
+
+
+box.appendChild(div);
+
+});
+
+
+if(!found){
+
+box.innerHTML=
+"No new ride requests";
+
+}
+
+}
+
+);
+
+}
+
+
+/* ACCEPT */
+
+window.acceptRide=
+async function(id){
+
+let driverName=
 document
 .getElementById("driverName")
-.value;
+.value.trim();
 
 
-if(!name){
+if(!driverName){
 
 alert(
-"Driver name likho"
+"Driver Name pehle likho"
 );
 
 return;
@@ -438,14 +848,55 @@ return;
 }
 
 
-document
-.getElementById("driverStatus")
-.innerHTML=
+await update(
 
-"🟢 Driver Online - "+
-name;
+ref(
+db,
+"rides/"+id
+),
+
+{
+
+status:"accepted",
+
+driverName:driverName
 
 }
+
+);
+
+
+alert(
+"✅ Ride Accepted"
+);
+
+};
+
+
+/* REJECT */
+
+window.rejectRide=
+async function(id){
+
+await update(
+
+ref(
+db,
+"rides/"+id
+),
+
+{
+status:"rejected"
+}
+
+);
+
+
+alert(
+"Ride Rejected"
+);
+
+};
 
 </script>
 
